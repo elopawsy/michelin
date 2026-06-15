@@ -1,26 +1,149 @@
 @import "tailwindcss";
 
+@theme {
+  /* ── Couleurs principales ── */
+  --color-jaune: #fce500;
+  --color-jaune-hover: #ffd600;
+  --color-bleu: #27509b;
+  --color-bleu-fonce: #00205b;
+  --color-bleu-nuit: #000c34;
+
+  /* ── Fonds ── */
+  --color-fond: #f7f9fc;
+  --color-carte: #ffffff;
+  --color-bleu-leger: #eef4ff;
+
+  /* ── Textes ── */
+  --color-encre: #000c34; /* texte principal */
+  --color-encre-2: #33415c; /* texte secondaire */
+  --color-encre-3: #6b7280; /* texte discret */
+
+  /* ── Bordures ── */
+  --color-bordure: #e5eaf2;
+
+  /* ── États ── */
+  --color-succes: #2e7d32;
+  --color-succes-fond: #eaf7ee;
+  --color-warning: #f9a825;
+  --color-warning-fond: #fff8e1;
+  --color-warning-texte: #b45309;
+  --color-danger: #b71c1c;
+  --color-danger-fond: #fff1f1;
+  --color-disabled: #e5e5e5;
+  --color-disabled-texte: #6b7280;
+
+  /* ── Carousel ── */
+  --color-dot: #d6dce8;
+
+  /* ── Typographie ── */
+  --font-sans:
+    var(--font-noto), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* ── Rayons ── */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-card-sm: 16px; /* petites cartes / badge warning */
+  --radius-card: 20px; /* cartes principales */
+  --radius-panel: 24px; /* grand panel web */
+  --radius-pill: 999px; /* boutons / badges */
+
+  /* ── Ombres ── */
+  --shadow-card: 0 12px 30px rgba(0, 12, 52, 0.08);
+  --shadow-card-hover: 0 18px 40px rgba(0, 12, 52, 0.12);
+  --shadow-cta: 0 10px 22px rgba(252, 229, 0, 0.28);
+  --shadow-panel: 0 24px 70px rgba(0, 12, 52, 0.1);
+  --shadow-pneu: 0 16px 40px rgba(0, 32, 91, 0.22);
+}
+
+/* Tokens du mode clair/sombre des pages applicatives (/pneu). */
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Focus accessible — 3px bleu, offset 3px (DA §4) */
+  :focus-visible {
+    outline: 3px solid var(--color-bleu);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: var(--color-jaune);
+    color: var(--color-bleu-fonce);
+  }
+  :target {
+    scroll-margin-top: 92px;
+  }
+}
+
+/* ── Reveal au scroll : opacity 0→1, translateY 16→0 (DA §13) ── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  will-change: opacity, transform;
+}
+[data-reveal][data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Connexion capteur : pulse 1000ms infinite (DA §13) ── */
+@keyframes ride-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(46, 125, 50, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(46, 125, 50, 0);
+  }
+}
+.pulse-dot {
+  animation: ride-pulse 1s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .pulse-dot {
+    animation: none !important;
+  }
 }
