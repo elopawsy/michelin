@@ -33,11 +33,65 @@ interface Ble {
 
 type Statut = "inactif" | "connexion" | "connecté" | "erreur";
 
-interface Mesure {
-  pression: number;
-  usure: number;
+// Trame JSON émise par le firmware ESP32 (clés courtes pour tenir dans le MTU).
+interface Trame {
+  p: number; // pression (bar)
+  po: number; // pression optimale (bar)
+  tt: number; // température pneu (°C)
+  ta: number; // température ambiante (°C)
+  v: number; // vitesse (km/h)
+  d: number; // distance / odomètre (km)
+  w: number; // usure (%)
+  rem: number; // durée de vie restante (km)
+  rr: number; // résistance au roulement (W)
+  surf: string; // surface : tarmac | gravel | rough
+  st: string; // statut : ok | leak | low_pressure | over_pressure | high_temp | replace_soon
+  bat: number; // batterie (%)
+}
+
+interface Mesure extends Trame {
   recuLe: string;
 }
+
+// Statut pneu -> libellé FR + couleur de la bannière.
+const STATUTS_PNEU: Record<string, { texte: string; classe: string }> = {
+  ok: {
+    texte: "Tout est bon",
+    classe:
+      "border-green-300 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-300",
+  },
+  leak: {
+    texte: "Fuite détectée",
+    classe:
+      "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+  },
+  low_pressure: {
+    texte: "Pneu sous-gonflé",
+    classe:
+      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+  },
+  over_pressure: {
+    texte: "Pneu sur-gonflé",
+    classe:
+      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+  },
+  high_temp: {
+    texte: "Température élevée",
+    classe:
+      "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+  },
+  replace_soon: {
+    texte: "À remplacer bientôt",
+    classe:
+      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+  },
+};
+
+const SURFACES: Record<string, string> = {
+  tarmac: "Route",
+  gravel: "Gravel",
+  rough: "Chemin",
+};
 
 export default function PneuPage() {
   const [statut, setStatut] = useState<Statut>("inactif");
@@ -87,9 +141,9 @@ export default function PneuPage() {
         if (!value) return;
         const texte = new TextDecoder().decode(value);
         try {
-          const data = JSON.parse(texte) as { p: number; u: number };
-          setMesure({ pression: data.p, usure: data.u, recuLe: horodatage() });
-          log(`pression=${data.p}  usure=${data.u}`);
+          const data = JSON.parse(texte) as Trame;
+          setMesure({ ...data, recuLe: horodatage() });
+          log(`p=${data.p}bar  usure=${data.w}%  v=${data.v}km/h  [${data.st}]`);
         } catch {
           log(`Trame illisible : ${texte}`);
         }
@@ -155,15 +209,58 @@ export default function PneuPage() {
         </p>
       )}
 
-      <section className="grid grid-cols-2 gap-4">
+      {mesure && <StatutPneu code={mesure.st} />}
+
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Carte
           label="Pression"
-          valeur={mesure ? `${mesure.pression}` : "—"}
+          valeur={mesure ? mesure.p.toFixed(2) : "—"}
           unite="bar"
+          note={mesure ? `optimal : ${mesure.po.toFixed(2)} bar` : undefined}
         />
         <Carte
           label="Usure"
-          valeur={mesure ? `${mesure.usure}` : "—"}
+          valeur={mesure ? mesure.w.toFixed(0) : "—"}
+          unite="%"
+        />
+        <Carte
+          label="Vitesse"
+          valeur={mesure ? mesure.v.toFixed(1) : "—"}
+          unite="km/h"
+        />
+        <Carte
+          label="Temp. pneu"
+          valeur={mesure ? mesure.tt.toFixed(1) : "—"}
+          unite="°C"
+        />
+        <Carte
+          label="Temp. ambiante"
+          valeur={mesure ? mesure.ta.toFixed(1) : "—"}
+          unite="°C"
+        />
+        <Carte
+          label="Distance"
+          valeur={mesure ? mesure.d.toFixed(0) : "—"}
+          unite="km"
+        />
+        <Carte
+          label="Restant"
+          valeur={mesure ? mesure.rem.toFixed(0) : "—"}
+          unite="km"
+        />
+        <Carte
+          label="Résist. roulement"
+          valeur={mesure ? mesure.rr.toFixed(1) : "—"}
+          unite="W"
+        />
+        <Carte
+          label="Surface"
+          valeur={mesure ? (SURFACES[mesure.surf] ?? mesure.surf) : "—"}
+          unite=""
+        />
+        <Carte
+          label="Batterie"
+          valeur={mesure ? mesure.bat.toFixed(0) : "—"}
           unite="%"
         />
       </section>
@@ -193,19 +290,41 @@ function Carte({
   label,
   valeur,
   unite,
+  note,
 }: {
   label: string;
   valeur: string;
   unite: string;
+  note?: string;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
       <span className="text-sm text-zinc-500">{label}</span>
       <span className="text-3xl font-semibold tabular-nums">
         {valeur}
-        <span className="ml-1 text-base font-normal text-zinc-400">{unite}</span>
+        {unite && (
+          <span className="ml-1 text-base font-normal text-zinc-400">
+            {unite}
+          </span>
+        )}
       </span>
+      {note && <span className="text-xs text-zinc-400">{note}</span>}
     </div>
+  );
+}
+
+function StatutPneu({ code }: { code: string }) {
+  const s = STATUTS_PNEU[code] ?? {
+    texte: code,
+    classe:
+      "border-zinc-300 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
+  };
+  return (
+    <p
+      className={`rounded-lg border px-4 py-3 text-sm font-medium ${s.classe}`}
+    >
+      {s.texte}
+    </p>
   );
 }
 
