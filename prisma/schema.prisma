@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  passwordHash         String                @map("password_hash")
+  firstName            String                @map("first_name")
+  lastName             String                @map("last_name")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  bicycles             UserBicycle[]
+  espDevices           EspDevice[]
+  preferences          UserPreference[]
+  wheelRecommendations WheelRecommendation[]
+
+  @@map("user")
+}
+
+model BicycleBrand {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  description String?
+  models      BicycleModel[]
+
+  @@map("bicycle_brand")
+}
+
+model BicycleType {
+  id                Int                @id @default(autoincrement())
+  title             String             @unique
+  description       String?
+  models            BicycleModel[]
+  wheelBicycleTypes WheelBicycleType[]
+
+  @@map("bicycle_type")
+}
+
+model BicycleModel {
+  id            Int           @id @default(autoincrement())
+  brandId       Int           @map("brand_id")
+  bicycleTypeId Int           @map("bicycle_type_id")
+  model         String
+  description   String?
+  brand         BicycleBrand  @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  bicycleType   BicycleType   @relation(fields: [bicycleTypeId], references: [id], onDelete: Restrict)
+  userBicycles  UserBicycle[]
+
+  @@unique([brandId, bicycleTypeId, model])
+  @@index([bicycleTypeId])
+  @@map("bicycle_model")
+}
+
+model UserBicycle {
+  id                   Int                   @id @default(autoincrement())
+  userId               Int                   @map("user_id")
+  bicycleModelId       Int                   @map("bicycle_model_id")
+  name                 String
+  wheelSize            String                @map("wheel_size")
+  tireWidthMm          Int                   @map("tire_width_mm")
+  brakeType            String                @map("brake_type")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  bicycleModel         BicycleModel          @relation(fields: [bicycleModelId], references: [id], onDelete: Restrict)
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  espDevices           EspDevice[]
+  sensorReadings       WheelSensorReading[]
+  wheelRecommendations WheelRecommendation[]
+
+  @@index([bicycleModelId])
+  @@index([userId])
+  @@map("user_bicycle")
+}
+
+model Goal {
+  id          Int              @id @default(autoincrement())
+  title       String           @unique
+  description String?
+  preferences UserPreference[]
+  wheelGoals  WheelGoal[]
+
+  @@map("goal")
+}
+
+model RoadSurface {
+  id                Int                  @id @default(autoincrement())
+  title             String               @unique
+  description       String?
+  preferences       UserPreference[]
+  sensorReadings    WheelSensorReading[]
+  wheelRoadSurfaces WheelRoadSurface[]
+
+  @@map("road_surface")
+}
+
+model UserPreference {
+  id                 Int         @id @default(autoincrement())
+  userId             Int         @map("user_id")
+  goalId             Int         @map("goal_id")
+  roadSurfaceId      Int         @map("road_surface_id")
+  weeklyDistanceKm   Float       @map("weekly_distance_km")
+  prioritySpeed      Int         @map("priority_speed")
+  priorityComfort    Int         @map("priority_comfort")
+  priorityDurability Int         @map("priority_durability")
+  goal               Goal        @relation(fields: [goalId], references: [id], onDelete: Restrict)
+  roadSurface        RoadSurface @relation(fields: [roadSurfaceId], references: [id], onDelete: Restrict)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([roadSurfaceId])
+  @@index([userId])
+  @@map("user_preference")
+}
+
+model EspDevice {
+  id              Int                  @id @default(autoincrement())
+  userId          Int                  @map("user_id")
+  userBicycleId   Int                  @map("user_bicycle_id")
+  serialNumber    String               @unique @map("serial_number")
+  firmwareVersion String               @map("firmware_version")
+  batteryPercent  Int                  @map("battery_percent")
+  lastSeenAt      DateTime?            @map("last_seen_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBicycle     UserBicycle          @relation(fields: [userBicycleId], references: [id], onDelete: Cascade)
+  sensorReadings  WheelSensorReading[]
+
+  @@index([userBicycleId])
+  @@index([userId])
+  @@map("esp_device")
+}
+
+model WheelSensorReading {
+  id                Int          @id @default(autoincrement())
+  espDeviceId       Int          @map("esp_device_id")
+  userBicycleId     Int          @map("user_bicycle_id")
+  recordedAt        DateTime     @default(now()) @map("recorded_at")
+  pressureBar       Float        @map("pressure_bar")
+  wearPercent       Float        @map("wear_percent")
+  speedKmh          Float        @map("speed_kmh")
+  tireTempC         Float        @map("tire_temp_c")
+  ambientTempC      Float        @map("ambient_temp_c")
+  distanceKm        Float        @map("distance_km")
+  remainingKm       Float        @map("remaining_km")
+  rollingResistance Float        @map("rolling_resistance")
+  roadSurfaceId     Int?         @map("road_surface_id")
+  batteryPercent    Int          @map("battery_percent")
+  espDevice         EspDevice    @relation(fields: [espDeviceId], references: [id], onDelete: Cascade)
+  roadSurface       RoadSurface? @relation(fields: [roadSurfaceId], references: [id], onDelete: SetNull)
+  userBicycle       UserBicycle  @relation(fields: [userBicycleId], references: [id], onDelete: Cascade)
+
+  @@index([espDeviceId, recordedAt])
+  @@index([roadSurfaceId])
+  @@index([userBicycleId])
+  @@map("wheel_sensor_reading")
+}
+
+model WheelType {
+  id          Int     @id @default(autoincrement())
+  title       String
+  wheelSize   String  @map("wheel_size")
+  description String?
+  wheels      Wheel[]
+
+  @@unique([title, wheelSize])
+  @@map("wheel_type")
+}
+
+model Wheel {
+  id                     Int                   @id @default(autoincrement())
+  wheelTypeId            Int                   @map("wheel_type_id")
+  model                  String
+  description            String?
+  durabilityKm           Int                   @map("durability_km")
+  minTireWidthMm         Int                   @map("min_tire_width_mm")
+  maxTireWidthMm         Int                   @map("max_tire_width_mm")
+  weightG                Int                   @map("weight_g")
+  price                  Decimal
+  tubelessReady          Boolean               @default(false) @map("tubeless_ready")
+  brakeType              String                @map("brake_type")
+  rollingResistanceScore Int                   @map("rolling_resistance_score")
+  comfortScore           Int                   @map("comfort_score")
+  speedScore             Int                   @map("speed_score")
+  durabilityScore        Int                   @map("durability_score")
+  wheelType              WheelType             @relation(fields: [wheelTypeId], references: [id], onDelete: Restrict)
+  wheelBicycleTypes      WheelBicycleType[]
+  wheelGoals             WheelGoal[]
+  wheelRecommendations   WheelRecommendation[]
+  wheelRoadSurfaces      WheelRoadSurface[]
+
+  @@unique([wheelTypeId, model])
+  @@map("wheel")
+}
+
+model WheelRoadSurface {
+  wheelId       Int         @map("wheel_id")
+  roadSurfaceId Int         @map("road_surface_id")
+  roadSurface   RoadSurface @relation(fields: [roadSurfaceId], references: [id], onDelete: Cascade)
+  wheel         Wheel       @relation(fields: [wheelId], references: [id], onDelete: Cascade)
+
+  @@id([wheelId, roadSurfaceId])
+  @@index([roadSurfaceId])
+  @@map("wheel_road_surface")
+}
+
+model WheelGoal {
+  wheelId Int   @map("wheel_id")
+  goalId  Int   @map("goal_id")
+  score   Int
+  goal    Goal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  wheel   Wheel @relation(fields: [wheelId], references: [id], onDelete: Cascade)
+
+  @@id([wheelId, goalId])
+  @@index([goalId])
+  @@map("wheel_goal")
+}
+
+model WheelBicycleType {
+  wheelId       Int         @map("wheel_id")
+  bicycleTypeId Int         @map("bicycle_type_id")
+  bicycleType   BicycleType @relation(fields: [bicycleTypeId], references: [id], onDelete: Cascade)
+  wheel         Wheel       @relation(fields: [wheelId], references: [id], onDelete: Cascade)
+
+  @@id([wheelId, bicycleTypeId])
+  @@index([bicycleTypeId])
+  @@map("wheel_bicycle_type")
+}
+
+model WheelRecommendation {
+  id            Int         @id @default(autoincrement())
+  userId        Int         @map("user_id")
+  userBicycleId Int         @map("user_bicycle_id")
+  wheelId       Int         @map("wheel_id")
+  score         Float
+  reason        String
+  createdAt     DateTime    @default(now()) @map("created_at")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userBicycle   UserBicycle @relation(fields: [userBicycleId], references: [id], onDelete: Cascade)
+  wheel         Wheel       @relation(fields: [wheelId], references: [id], onDelete: Restrict)
+
+  @@index([userBicycleId])
+  @@index([userId])
+  @@index([wheelId])
+  @@map("wheel_recommendation")
+}
