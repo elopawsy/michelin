@@ -7,11 +7,7 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not set");
-}
+const databaseUrl = process.env.DATABASE_URL ?? "file:./dev.db";
 
 const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
 
