@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { ArrowRight, Button } from "@/app/_components/ui";
 
@@ -18,6 +18,7 @@ const labelClass = "text-sm font-bold text-bleu-fonce";
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -57,7 +58,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.replace("/pneu");
+      router.replace(getSafeRedirectPath(searchParams.get("next")));
       router.refresh();
     } catch {
       setError("Connexion impossible. Réessayez dans un instant.");
@@ -153,6 +154,14 @@ export function AuthForm({ mode }: AuthFormProps) {
       </p>
     </form>
   );
+}
+
+function getSafeRedirectPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/pneu";
+  }
+
+  return value;
 }
 
 function Field({

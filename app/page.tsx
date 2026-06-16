@@ -2,11 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { MichelinHeader } from "./_components/MichelinHeader";
 import { ArrowRight } from "./_components/ui";
+import { getCurrentAuthSession } from "@/lib/current-session";
 
 const HERO_ALT =
   "Bibendum, la mascotte Michelin, salue de la main à côté d'un vélo de route bleu sur une route de montagne";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getCurrentAuthSession();
+  const startHref = session ? "/heritage" : "/register";
+
   return (
     <div className="relative isolate flex min-h-screen flex-col overflow-hidden bg-white text-encre">
       {/* Fond paysage pleine largeur — Bibendum + montagnes, fondu blanc intégré */}
@@ -47,7 +51,7 @@ export default function Home() {
 
           <div className="mt-10">
             <Link
-              href="/heritage"
+              href={startHref}
               className="group inline-flex h-[60px] min-w-[17rem] items-center justify-center gap-3 rounded-full bg-jaune px-8 text-[17px] font-bold text-bleu-fonce shadow-[0_16px_32px_rgba(252,229,0,0.4)] transition duration-200 hover:-translate-y-px hover:bg-jaune-hover active:translate-y-0 active:scale-[0.98]"
             >
               Commencer

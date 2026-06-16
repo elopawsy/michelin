@@ -23,10 +23,10 @@ export function AuthShell({
           <Wordmark className="h-9 sm:h-11" />
         </Link>
         <Link
-          href="/pneu"
+          href="/"
           className="text-sm font-semibold text-bleu-fonce transition-colors hover:text-bleu"
         >
-          Capteur
+          Accueil
         </Link>
       </header>
 
