@@ -48,6 +48,10 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    # packages:read → le GITHUB_TOKEN peut pull l'image privée du dépôt sur le VPS.
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
 
@@ -58,22 +62,26 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: ${{ secrets.VPS_PORT }}
           source: docker-compose.prod.yml
           target: /opt/michelin
 
       - name: Pull + up sur le VPS
         uses: appleboy/ssh-action@v1
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_OWNER: ${{ github.repository_owner }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: ${{ secrets.VPS_PORT }}
+          envs: GHCR_TOKEN,GH_OWNER
           script: |
             set -e
             cd /opt/michelin
-            # Login GHCR si l'image est privée (sinon supprimable).
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GH_OWNER" --password-stdin
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+            docker logout ghcr.io
             docker image prune -f
