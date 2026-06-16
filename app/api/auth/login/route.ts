@@ -1,11 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jsonError, parseJsonObject } from "@/lib/api-response";
-import { createAuthToken, setAuthCookie } from "@/lib/auth";
+import {
+  createAuthToken,
+  getAuthSessionFromRequest,
+  setAuthCookie,
+} from "@/lib/auth";
 import { verifyPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 import { serializeUser } from "@/lib/user-response";
 
 export async function POST(request: NextRequest) {
+  if (getAuthSessionFromRequest(request)) {
+    return jsonError("Already authenticated", 409);
+  }
+
   let body: Record<string, unknown>;
 
   try {

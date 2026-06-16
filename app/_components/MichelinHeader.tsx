@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { getCurrentUserSummary } from "@/lib/current-session";
+import { HeaderUserBadge } from "./HeaderUserBadge";
 import { Wordmark } from "./ui";
 
 /* En-tête marketing partagé : logo Michelin officiel + navigation. */
-export function MichelinHeader() {
+export async function MichelinHeader() {
+  const user = await getCurrentUserSummary();
+
   return (
     <header className="relative z-10">
       <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 py-7 lg:px-12 lg:py-8">
@@ -20,6 +24,13 @@ export function MichelinHeader() {
           <a href="#faq" className="transition-colors hover:text-bleu">
             FAQ
           </a>
+          {user ? (
+            <HeaderUserBadge user={user} />
+          ) : (
+            <Link href="/login" className="transition-colors hover:text-bleu">
+              Connexion
+            </Link>
+          )}
           <button
             type="button"
             className="inline-flex items-center gap-1.5 transition-colors hover:text-bleu"
