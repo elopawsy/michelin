@@ -7,6 +7,7 @@ const notoSans = Noto_Sans({
   subsets: ["latin"],
   variable: "--font-noto",
   weight: ["400", "500", "700", "800"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 

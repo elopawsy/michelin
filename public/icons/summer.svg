@@ -1,0 +1,18 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
+<g>
+	<path d="M16,8.8c-3.97,0-7.2,3.23-7.2,7.2c0,3.97,3.23,7.2,7.2,7.2c3.97,0,7.2-3.23,7.2-7.2C23.2,12.03,19.97,8.8,16,8.8z M16,20.8
+		c-2.647,0-4.8-2.153-4.8-4.8c0-2.647,2.153-4.8,4.8-4.8c2.646,0,4.8,2.153,4.8,4.8C20.8,18.646,18.646,20.8,16,20.8z"></path>
+	<rect x="15" y="2" width="2" height="5"></rect>
+	<rect x="15" y="25" width="2" height="5"></rect>
+	<rect x="2" y="15" width="5" height="2"></rect>
+	<rect x="25" y="15" width="5" height="2"></rect>
+	<rect x="9.25" y="3.541" transform="matrix(0.866 -0.5 0.5 0.866 -1.647 5.9343)" width="2" height="5"></rect>
+	<rect x="20.75" y="23.459" transform="matrix(0.866 -0.5 0.5 0.866 -10.0656 14.353)" width="2" height="5"></rect>
+	<rect x="3.541" y="20.75" transform="matrix(0.866 -0.5 0.5 0.866 -10.0658 5.9343)" width="5" height="2"></rect>
+	<rect x="23.459" y="9.25" transform="matrix(0.866 -0.5 0.5 0.866 -1.6471 14.3529)" width="5" height="2"></rect>
+	<rect x="5.04" y="7.75" transform="matrix(0.5 -0.866 0.866 0.5 -5.8565 10.3562)" width="2" height="5"></rect>
+	<rect x="24.959" y="19.25" transform="matrix(0.5 -0.866 0.866 0.5 -5.8566 33.356)" width="2" height="5"></rect>
+	<rect x="7.75" y="24.959" transform="matrix(0.4999 -0.8661 0.8661 0.4999 -17.3565 21.8588)" width="5" height="2"></rect>
+	<rect x="19.25" y="5.04" transform="matrix(0.4999 -0.8661 0.8661 0.4999 5.6452 21.8578)" width="5" height="2"></rect>
+</g>
+</svg>
