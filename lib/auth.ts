@@ -1,10 +1,6 @@
 import "server-only";
 
-import {
-  createHmac,
-  randomBytes,
-  timingSafeEqual,
-} from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
 
 const AUTH_COOKIE = "auth_token";
@@ -48,9 +44,7 @@ function verifySignature(value: string, signature: string) {
   const actual = Buffer.from(sign(value));
   const expected = Buffer.from(signature);
 
-  return (
-    actual.length === expected.length && timingSafeEqual(actual, expected)
-  );
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
 export function createAuthToken(session: AuthSession) {
