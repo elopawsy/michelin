@@ -1,109 +1,67 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Button, ButtonLink, Picto } from "../_components/ui";
-
-const SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // en minuscules !
-const CHAR = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
-
-// Le Web Bluetooth n'est pas inclus dans lib.dom.d.ts : on déclare le minimum
-// dont on se sert ici pour rester typé sans `any`.
-interface BleCharacteristic {
-  startNotifications(): Promise<BleCharacteristic>;
-  addEventListener(
-    type: "characteristicvaluechanged",
-    listener: (event: Event) => void,
-  ): void;
-}
-interface BleService {
-  getCharacteristic(uuid: string): Promise<BleCharacteristic>;
-}
-interface BleServer {
-  getPrimaryService(uuid: string): Promise<BleService>;
-}
-interface BleDevice {
-  name?: string;
-  gatt?: { connect(): Promise<BleServer>; disconnect(): void };
-  addEventListener(type: "gattserverdisconnected", listener: () => void): void;
-}
-interface Ble {
-  requestDevice(options: {
-    filters: { services: string[] }[];
-  }): Promise<BleDevice>;
-}
+import {
+  abonner,
+  connecter,
+  deconnecter,
+  deviceConnecte,
+  estAnnulation,
+  trameActuelle,
+  type Trame,
+} from "../_lib/ble";
 
 type Statut = "inactif" | "connexion" | "connecté" | "erreur";
 
-// Trame JSON émise par le firmware ESP32 (clés courtes pour tenir dans le MTU).
-// Le vélo a deux pneus : pression et usure sont donc dédoublées avant / arrière.
-interface Trame {
-  pf: number; // pression avant (bar)
-  pr: number; // pression arrière (bar)
-  wf: number; // usure avant (%)
-  wr: number; // usure arrière (%)
-  v: number; // vitesse (km/h)
-  d: number; // distance / odomètre (km)
-  bat: number; // batterie (%)
-}
-
+// Une mesure = la trame reçue du capteur, horodatée à la réception.
 interface Mesure extends Trame {
   recuLe: string;
 }
 
 export function PneuClient() {
-  const [statut, setStatut] = useState<Statut>("inactif");
-  const [appareil, setAppareil] = useState<string>("");
-  const [mesure, setMesure] = useState<Mesure | null>(null);
+  // État initial dérivé de la connexion ouverte à l'étape capteur de
+  // l'onboarding : elle survit au router.push (même contexte JS). Si on arrive
+  // ici sans être passé par l'onboarding, on reste « inactif » et le bouton
+  // ci-dessous permet d'ouvrir la connexion à la main.
+  const [statut, setStatut] = useState<Statut>(() =>
+    deviceConnecte() ? "connecté" : "inactif",
+  );
+  const [appareil, setAppareil] = useState<string>(
+    () => deviceConnecte()?.name ?? "",
+  );
+  const [mesure, setMesure] = useState<Mesure | null>(() => {
+    const trame = trameActuelle();
+    return deviceConnecte() && trame ? { ...trame, recuLe: horodatage() } : null;
+  });
   const [erreur, setErreur] = useState<string>("");
-  const deviceRef = useRef<BleDevice | null>(null);
+
+  // S'abonne aux mesures en direct et à la perte de connexion.
+  useEffect(
+    () =>
+      abonner(
+        (trame) => {
+          setStatut("connecté");
+          setMesure({ ...trame, recuLe: horodatage() });
+        },
+        () => setStatut("inactif"),
+      ),
+    [],
+  );
 
   async function connecterPneu() {
     setErreur("");
 
-    const ble = (navigator as Navigator & { bluetooth?: Ble }).bluetooth;
-    if (!ble) {
-      setStatut("erreur");
-      setErreur(
-        "La connexion Bluetooth n'est pas disponible sur ce navigateur. Essayez avec Chrome ou Edge.",
-      );
-      return;
-    }
-
     try {
       setStatut("connexion");
-      const device = await ble.requestDevice({
-        filters: [{ services: [SERVICE] }],
-      });
-      deviceRef.current = device;
-      setAppareil(device.name ?? "(sans nom)");
-
-      device.addEventListener("gattserverdisconnected", () => {
-        setStatut("inactif");
-      });
-
-      const server = await device.gatt!.connect();
-      const service = await server.getPrimaryService(SERVICE);
-      const char = await service.getCharacteristic(CHAR);
-      await char.startNotifications();
-
-      char.addEventListener("characteristicvaluechanged", (event) => {
-        const value = (event.target as unknown as { value?: DataView }).value;
-        if (!value) return;
-        const texte = new TextDecoder().decode(value);
-        try {
-          const data = JSON.parse(texte) as Trame;
-          setMesure({ ...data, recuLe: horodatage() });
-        } catch {
-          // Trame illisible : on ignore.
-        }
-      });
-
+      const nom = await connecter();
+      setAppareil(nom);
       setStatut("connecté");
     } catch (e) {
       setStatut("erreur");
       const message = e instanceof Error ? e.message : String(e);
       // L'utilisateur qui ferme le sélecteur déclenche une NotFoundError : pas une vraie erreur.
-      if (message.includes("cancelled") || message.includes("User cancelled")) {
+      if (estAnnulation(message)) {
         setStatut("inactif");
         return;
       }
@@ -111,8 +69,8 @@ export function PneuClient() {
     }
   }
 
-  function deconnecter() {
-    deviceRef.current?.gatt?.disconnect();
+  function deconnecterPneu() {
+    deconnecter();
   }
 
   return (
@@ -131,17 +89,15 @@ export function PneuClient() {
 
         <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
           <div className="flex flex-wrap items-center gap-3">
-            {statut === "connecté" && (
-              <Button variant="outline" onClick={deconnecter}>
+            {statut === "connecté" ? (
+              <Button variant="outline" onClick={deconnecterPneu}>
                 Déconnecter
               </Button>
+            ) : (
+              <Button onClick={connecterPneu} disabled={statut === "connexion"}>
+                {statut === "connexion" ? "Connexion…" : "Connecter le pneu"}
+              </Button>
             )}
-            <Button
-              onClick={connecterPneu}
-              disabled={statut === "connexion" || statut === "connecté"}
-            >
-              {statut === "connexion" ? "Connexion…" : "Connecter le pneu"}
-            </Button>
           </div>
           <StatutBadge statut={statut} />
         </div>
@@ -157,6 +113,15 @@ export function PneuClient() {
       {erreur && (
         <p className="mt-4 rounded-card-sm border border-danger/25 bg-danger-fond px-4 py-3 text-sm font-medium text-danger">
           {erreur}
+        </p>
+      )}
+
+      {/* Capteur non connecté (étape passée ou déconnexion) : les mesures
+          restent vides tant que le Bluetooth n'est pas établi. */}
+      {statut === "inactif" && (
+        <p className="mt-4 rounded-card-sm border border-warning bg-warning-fond px-4 py-3 text-sm font-medium text-warning-texte">
+          Connexion non effectuée — connectez votre capteur en Bluetooth pour
+          afficher vos données en temps réel.
         </p>
       )}
 
@@ -296,7 +261,13 @@ function RecoPub({ mesure }: { mesure: Mesure | null }) {
         <p className="mt-1 text-sm text-white/50">
           Tubeless · gomme tendre · carcasse souple
         </p>
-        <ButtonLink href="/#gamme" variant="primary" className="mt-6">
+        <ButtonLink
+          href="https://www.michelin.fr/bicycle"
+          variant="primary"
+          className="mt-6"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Découvrir le pneu
         </ButtonLink>
       </div>

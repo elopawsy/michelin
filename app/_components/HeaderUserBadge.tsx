@@ -1,7 +1,12 @@
-import type { CurrentUserSummary } from "@/lib/current-session";
+export type HeaderUserBadgeUser = {
+  id: number;
+  email: string;
+  displayName: string;
+  initials: string;
+};
 
 type HeaderUserBadgeProps = {
-  user: CurrentUserSummary;
+  user: HeaderUserBadgeUser;
   variant?: "marketing" | "app";
 };
 

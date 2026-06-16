@@ -16,29 +16,29 @@ const CARDS: Card[] = [
     title: "Héritage depuis 1889",
     desc: "Une histoire guidée par la passion et la qualité.",
     img: "/heritage-1.jpg",
-    alt: "Bicyclette de sécurité d'époque, héritage du cycle depuis 1889",
+    alt: "Vélo de route vintage, héritage du cycle Michelin depuis 1889",
     year: "1889",
   },
   {
     title: "Innovation continue",
     desc: "Des technologies de pointe pour toujours aller plus loin.",
     img: "/heritage-2.jpg",
-    alt: "Ingénieur Michelin au travail dans un environnement high-tech bleuté",
+    alt: "Vélo de route carbone moderne, innovation et technologie de pointe Michelin",
   },
   {
     title: "Gamme wide premium",
     desc: "Des pneus conçus pour chaque pratique.",
     img: "/heritage-3.jpg",
-    alt: "Cycliste sur une route de montagne, gamme premium Michelin",
+    alt: "Cyclistes sur route équipés de pneus premium Michelin",
   },
 ];
 
 export default function Heritage() {
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-fond text-encre">
+    <div className="flex h-[100svh] flex-col overflow-hidden bg-fond text-encre lg:h-screen">
       <MichelinHeader />
 
-      <main className="mx-auto flex w-full min-h-0 max-w-[1040px] flex-1 flex-col justify-center px-6 pb-6 lg:px-12">
+      <main className="mx-auto flex w-full min-h-0 max-w-[1040px] flex-1 flex-col justify-start px-6 pb-8 lg:justify-center lg:px-12 lg:pb-6">
         <h1 className="max-w-2xl text-[clamp(1.6rem,3.4vw,2.6rem)] leading-[1.1] font-extrabold tracking-[-0.02em] text-bleu-fonce">
           L&rsquo;héritage Michelin depuis 1889.
         </h1>
@@ -46,16 +46,19 @@ export default function Heritage() {
           Plus de 130 ans d&rsquo;innovation au service de votre mobilité.
         </p>
 
-        <ul className="mt-6 grid grid-cols-3 gap-4 lg:mt-8 lg:gap-7">
+        <ul className="-mx-6 mt-6 flex min-h-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-6 px-6 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] lg:mx-0 lg:mt-8 lg:flex-none lg:gap-7 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden">
           {CARDS.map((card) => (
-            <li key={card.title} className="flex flex-col">
-              <div className="relative h-[clamp(220px,34vh,300px)] overflow-hidden rounded-3xl shadow-card">
+            <li
+              key={card.title}
+              className="group flex shrink-0 basis-[82%] snap-start flex-col transition-[flex-grow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:basis-[46%] lg:min-w-0 lg:flex-1 lg:basis-0 lg:hover:grow-[1.7]"
+            >
+              <div className="relative min-h-0 flex-1 overflow-hidden rounded-3xl shadow-card lg:h-[clamp(380px,62vh,580px)] lg:flex-none">
                 <Image
                   src={card.img}
                   alt={card.alt}
                   fill
                   unoptimized
-                  sizes="(max-width: 640px) 33vw, 320px"
+                  sizes="(max-width: 640px) 82vw, (max-width: 1024px) 46vw, 420px"
                   className="object-cover"
                 />
                 {card.year && (
@@ -91,7 +94,7 @@ export default function Heritage() {
         <div className="mt-7 flex shrink-0 justify-center lg:mt-8">
           <Link
             href="/configurateur"
-            className="group inline-flex h-[54px] min-w-[17rem] items-center justify-between rounded-full bg-bleu-fonce pr-7 pl-9 text-base font-bold text-white shadow-[0_16px_34px_rgba(0,32,91,0.32)] transition duration-200 hover:-translate-y-px hover:bg-bleu-nuit active:translate-y-0 active:scale-[0.98]"
+            className="group inline-flex h-[54px] items-center gap-3 rounded-full bg-bleu-fonce px-8 text-base font-bold text-white shadow-[0_16px_34px_rgba(0,32,91,0.32)] transition duration-200 hover:-translate-y-px hover:bg-bleu-nuit active:translate-y-0 active:scale-[0.98]"
           >
             Continuer
             <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
