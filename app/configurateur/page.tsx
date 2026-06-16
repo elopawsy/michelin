@@ -1,20 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowRight, Wordmark } from "../_components/ui";
+import { useState, type ReactNode } from "react";
+import { ArrowRight, BackLink, Wordmark } from "../_components/ui";
 
 const STEP = 2;
-const TOTAL = 4;
+const TOTAL = 6;
 
-const BIKES = [
-  { id: "route", label: "ROUTE" },
-  { id: "gravel", label: "GRAVEL" },
-  { id: "ville", label: "VILLE" },
-  { id: "vtt", label: "VTT" },
-];
+type IconProps = { className?: string };
 
-function BikeIcon({ className = "" }: { className?: string }) {
+/** Châssis SVG commun : viewBox, style de trait et pédalier partagés. */
+function BikeSvg({
+  className = "",
+  children,
+}: IconProps & { children: ReactNode }) {
   return (
     <svg
       viewBox="0 0 120 80"
@@ -26,17 +25,91 @@ function BikeIcon({ className = "" }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <circle cx="28" cy="54" r="22" />
-      <circle cx="92" cy="54" r="22" />
-      <circle cx="56" cy="54" r="3.5" fill="currentColor" stroke="none" />
-      <path d="M28 54H56L46 28H78L92 54" />
-      <path d="M56 54 78 28" />
-      <path d="M28 54 46 28" />
-      <path d="M40 27 53 27" />
-      <path d="M78 28c7-3 13-1 16 4" />
+      <circle cx="58" cy="56" r="3" fill="currentColor" stroke="none" />
+      {children}
     </svg>
   );
 }
+
+/** Route : guidon cintre (drop bar) et pneus fins. */
+function RouteIcon({ className }: IconProps) {
+  return (
+    <BikeSvg className={className}>
+      <circle cx="32" cy="56" r="20" />
+      <circle cx="88" cy="56" r="20" />
+      <path d="M32 56 50 28 58 56Z" />
+      <path d="M50 28 76 30 58 56" />
+      <path d="M76 30 88 56" />
+      <path d="M45 27h11" />
+      <path d="M76 30V23" />
+      <path d="M70 23h14a6 6 0 0 1 6 6v2a6 6 0 0 1-6 6" />
+    </BikeSvg>
+  );
+}
+
+/** Gravel : guidon cintre et pneus larges (jante apparente). */
+function GravelIcon({ className }: IconProps) {
+  return (
+    <BikeSvg className={className}>
+      <circle cx="32" cy="56" r="20" />
+      <circle cx="32" cy="56" r="13" />
+      <circle cx="88" cy="56" r="20" />
+      <circle cx="88" cy="56" r="13" />
+      <path d="M32 56 50 28 58 56Z" />
+      <path d="M50 28 76 30 58 56" />
+      <path d="M76 30 88 56" />
+      <path d="M45 27h11" />
+      <path d="M76 30V23" />
+      <path d="M70 23h14a6 6 0 0 1 6 6v2a6 6 0 0 1-6 6" />
+    </BikeSvg>
+  );
+}
+
+/** Ville : cadre col-de-cygne, guidon relevé et panier avant. */
+function VilleIcon({ className }: IconProps) {
+  return (
+    <BikeSvg className={className}>
+      <circle cx="32" cy="56" r="20" />
+      <circle cx="88" cy="56" r="20" />
+      <path d="M32 56 50 30 58 56Z" />
+      <path d="M74 32 58 56" />
+      <path d="M50 30Q56 48 74 32" />
+      <path d="M74 32 88 56" />
+      <path d="M45 29h11" />
+      <path d="M74 32 76 19" />
+      <path d="M76 19q-8 1-10 8" />
+      <path d="M80 24h16l-2 12H82z" />
+      <path d="M85 24v12M91 24v12" />
+    </BikeSvg>
+  );
+}
+
+/** VTT : guidon plat, fourche suspendue et pneus larges. */
+function VttIcon({ className }: IconProps) {
+  return (
+    <BikeSvg className={className}>
+      <circle cx="32" cy="56" r="20" />
+      <circle cx="32" cy="56" r="13" />
+      <circle cx="88" cy="56" r="20" />
+      <circle cx="88" cy="56" r="13" />
+      <path d="M32 56 50 28 58 56Z" />
+      <path d="M50 28 76 30 58 56" />
+      <path d="M76 30 88 56" />
+      <path d="M81 31 87 48" />
+      <path d="M45 27h11" />
+      <path d="M76 30V22" />
+      <path d="M68 22h16" />
+    </BikeSvg>
+  );
+}
+
+const BIKES: { id: string; label: string; Icon: (props: IconProps) => ReactNode }[] =
+  [
+    { id: "route", label: "ROUTE", Icon: RouteIcon },
+    { id: "gravel", label: "GRAVEL", Icon: GravelIcon },
+    { id: "ville", label: "VILLE", Icon: VilleIcon },
+    { id: "vtt", label: "VTT", Icon: VttIcon },
+  ];
 
 export default function Configurateur() {
   const [selected, setSelected] = useState<string | null>(null);
@@ -45,7 +118,10 @@ export default function Configurateur() {
     <div className="flex min-h-screen items-center justify-center bg-fond p-4 sm:p-6">
       <section className="flex w-full max-w-[900px] flex-col rounded-[28px] bg-carte p-6 shadow-panel sm:p-9">
         <div className="flex items-center justify-between">
-          <Wordmark className="h-9 sm:h-11" />
+          <div className="flex items-center gap-2">
+            <BackLink href="/" />
+            <Wordmark className="h-9 sm:h-11" />
+          </div>
           <span className="text-sm font-semibold text-encre-2">
             Étape {STEP} / {TOTAL}
           </span>
@@ -70,6 +146,7 @@ export default function Configurateur() {
         <div className="mx-auto mt-8 grid w-full max-w-[600px] grid-cols-2 gap-4 sm:gap-5">
           {BIKES.map((b) => {
             const active = selected === b.id;
+            const Icon = b.Icon;
             return (
               <button
                 key={b.id}
@@ -82,7 +159,7 @@ export default function Configurateur() {
                     : "border-bordure bg-carte hover:border-bleu"
                 }`}
               >
-                <BikeIcon className="h-12 w-auto text-bleu-fonce transition-transform duration-200 ease-out group-hover:scale-110" />
+                <Icon className="h-12 w-auto text-bleu-fonce transition-transform duration-200 ease-out group-hover:scale-110" />
                 <span className="text-sm font-bold tracking-[0.06em] text-bleu-fonce">
                   {b.label}
                 </span>
@@ -99,7 +176,7 @@ export default function Configurateur() {
 
         <div className="mt-6 flex justify-center">
           <Link
-            href="/pneu"
+            href="/configurateur/terrain"
             className="group inline-flex h-[56px] min-w-[16rem] items-center justify-center gap-3 rounded-full bg-jaune px-9 text-base font-bold text-bleu-fonce shadow-cta transition duration-200 hover:-translate-y-px hover:bg-jaune-hover active:translate-y-0 active:scale-[0.98]"
           >
             Suivant
