@@ -7,6 +7,8 @@ export const CHAR = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
 export const MSG_BLUETOOTH_INDISPONIBLE =
   "La connexion Bluetooth n'est pas disponible sur ce navigateur. Essayez avec Chrome ou Edge.";
+export const MSG_GATT_INDISPONIBLE =
+  "Le service GATT n'est pas disponible sur cet appareil.";
 
 export interface BleCharacteristic {
   startNotifications(): Promise<BleCharacteristic>;
@@ -59,6 +61,38 @@ export interface Trame {
   v: number; // vitesse (km/h)
   d: number; // distance / odomètre (km)
   bat: number; // batterie (%)
+}
+
+const TRAME_FIELDS = ["pf", "pr", "wf", "wr", "v", "d", "bat"] as const;
+
+export function parseTrame(value: unknown): Trame | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as Record<(typeof TRAME_FIELDS)[number], unknown>;
+
+  for (const field of TRAME_FIELDS) {
+    if (
+      typeof candidate[field] !== "number" ||
+      !Number.isFinite(candidate[field])
+    ) {
+      return null;
+    }
+  }
+
+  const numberValue = (field: (typeof TRAME_FIELDS)[number]) =>
+    candidate[field] as number;
+
+  return {
+    bat: numberValue("bat"),
+    d: numberValue("d"),
+    pf: numberValue("pf"),
+    pr: numberValue("pr"),
+    v: numberValue("v"),
+    wf: numberValue("wf"),
+    wr: numberValue("wr"),
+  };
 }
 
 // --- Connexion partagée -----------------------------------------------------
@@ -116,7 +150,11 @@ export async function connecter(): Promise<string> {
     ecouteursDeconnexion.forEach((fn) => fn());
   });
 
-  const server = await device.gatt!.connect();
+  if (!device.gatt) {
+    throw new Error(MSG_GATT_INDISPONIBLE);
+  }
+
+  const server = await device.gatt.connect();
   const service = await server.getPrimaryService(SERVICE);
   const char = await service.getCharacteristic(CHAR);
   await char.startNotifications();
@@ -125,7 +163,12 @@ export async function connecter(): Promise<string> {
     const value = (event.target as unknown as { value?: DataView }).value;
     if (!value) return;
     try {
-      const trame = JSON.parse(new TextDecoder().decode(value)) as Trame;
+      const trame = parseTrame(JSON.parse(new TextDecoder().decode(value)));
+
+      if (!trame) {
+        return;
+      }
+
       derniereTrame = trame;
       ecouteursTrame.forEach((fn) => fn(trame));
     } catch {
