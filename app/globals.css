@@ -52,7 +52,7 @@
   /* ── Ombres ── */
   --shadow-card: 0 12px 30px rgba(0, 12, 52, 0.08);
   --shadow-card-hover: 0 18px 40px rgba(0, 12, 52, 0.12);
-  --shadow-cta: 0 10px 22px rgba(252, 229, 0, 0.28);
+  --shadow-cta: 0 6px 16px -6px rgba(0, 12, 52, 0.2);
   --shadow-panel: 0 24px 70px rgba(0, 12, 52, 0.1);
   --shadow-pneu: 0 16px 40px rgba(0, 32, 91, 0.22);
 }

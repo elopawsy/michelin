@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
@@ -84,19 +85,47 @@ export function Badge({
   );
 }
 
-/* Signature de marque — réutilisée dans l'en-tête du site et de /pneu. */
+/* Signature de marque — logo Michelin officiel.
+   Réutilisée dans l'en-tête du site, de /pneu et le menu mobile. */
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`flex items-baseline gap-2 ${className}`}>
-      <span className="text-sm font-extrabold tracking-[0.24em] text-bleu-fonce uppercase">
-        Michelin
-      </span>
-      <span className="text-lg leading-none font-bold text-bleu">Ride</span>
-      <span
-        className="h-1.5 w-1.5 self-end rounded-full bg-jaune"
-        aria-hidden="true"
-      />
-    </span>
+    <Image
+      src="/logo-left.webp"
+      alt="Michelin"
+      width={678}
+      height={200}
+      priority
+      className={`h-7 w-auto sm:h-8 ${className}`}
+    />
+  );
+}
+
+/* Pictogramme Michelin (public/pictograms/*.svg) affiché en masque CSS :
+   la silhouette est teintée par `currentColor`, donc pilotée par `text-*`.
+   Taille via className (h-/w-). Décoratif → aria-hidden. */
+export function Picto({
+  name,
+  className = "",
+}: {
+  name: string;
+  className?: string;
+}) {
+  const url = `url(/pictograms/${name}.svg)`;
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-block shrink-0 bg-current ${className}`}
+      style={{
+        maskImage: url,
+        WebkitMaskImage: url,
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+      }}
+    />
   );
 }
 

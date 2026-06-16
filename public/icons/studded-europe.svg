@@ -1,0 +1,17 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
+<g>
+	<path d="M21,28v-2c1.103,0,2-0.897,2-2V6c0-1.103-0.897-2-2-2V2h-2v2h-2V2h-2v2h-2V2h-2v2C9.898,4,9,4.897,9,6v18
+		c0,1.103,0.897,2,2,2v2H6v2h20v-2H21z M14,6h4h3v0.586l-2.707,2.707l1.414,1.414L21,9.414l0,3.172l-2.708,2.707l1.414,1.414
+		l1.293-1.293v3.172l-2.708,2.708l1.414,1.414l1.294-1.294V24H11v-2.586l1.293,1.293l1.414-1.414L11,18.586v-3.172l1.293,1.293
+		l1.414-1.414L11,12.586V9.414l1.293,1.293l1.414-1.414L11,6.586V6H14z M13,28v-2h2v2H13z M17,28v-2h2v2H17z"></path>
+	<circle cx="16" cy="10" r="1"></circle>
+	<circle cx="16" cy="22" r="1"></circle>
+	<circle cx="16" cy="16" r="1"></circle>
+	<circle cx="14" cy="13" r="1"></circle>
+	<circle cx="18" cy="13" r="1"></circle>
+	<circle cx="14" cy="19" r="1"></circle>
+	<circle cx="18" cy="19" r="1"></circle>
+	<circle cx="14" cy="7" r="1"></circle>
+	<circle cx="18" cy="7" r="1"></circle>
+</g>
+</svg>
