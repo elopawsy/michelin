@@ -9,11 +9,16 @@ export const metadata: Metadata = {
   description: "Connexion à l'espace Michelin Ride.",
 };
 
-export default async function LoginPage() {
+type AuthPageProps = {
+  searchParams: Promise<{ next?: string | string[] }>;
+};
+
+export default async function LoginPage({ searchParams }: AuthPageProps) {
   const session = await getCurrentAuthSession();
+  const redirectTo = getSafeRedirect((await searchParams).next);
 
   if (session) {
-    redirect("/pneu");
+    redirect(redirectTo);
   }
 
   return (
@@ -22,7 +27,13 @@ export default async function LoginPage() {
       title="Connexion"
       description="Retrouvez vos vélos, vos capteurs et vos recommandations Michelin Ride."
     >
-      <AuthForm mode="login" />
+      <AuthForm mode="login" redirectTo={redirectTo} />
     </AuthShell>
   );
+}
+
+function getSafeRedirect(value: string | string[] | undefined) {
+  const next = Array.isArray(value) ? value[0] : value;
+
+  return next?.startsWith("/") && !next.startsWith("//") ? next : "/pneu";
 }

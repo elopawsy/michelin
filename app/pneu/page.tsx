@@ -1,11 +1,24 @@
 import Link from "next/link";
-import { getCurrentUserSummary } from "@/lib/current-session";
+import {
+  getCurrentAuthSession,
+  getCurrentUserSummary,
+} from "@/lib/current-session";
+import { loadDashboard } from "@/lib/dashboard";
 import { HeaderUserBadge } from "../_components/HeaderUserBadge";
 import { Wordmark } from "../_components/ui";
-import { PneuClient } from "./PneuClient";
+import {
+  PneuClient,
+  type PneuRecommendationSummary,
+} from "./PneuClient";
 
 export default async function PneuPage() {
-  const user = await getCurrentUserSummary();
+  const [session, user] = await Promise.all([
+    getCurrentAuthSession(),
+    getCurrentUserSummary(),
+  ]);
+  const recommendation = session
+    ? await loadLatestRecommendation(session).catch(() => null)
+    : null;
 
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">
@@ -41,7 +54,28 @@ export default async function PneuPage() {
         </div>
       </header>
 
-      <PneuClient />
+      <PneuClient recommendation={recommendation} />
     </div>
   );
+}
+
+async function loadLatestRecommendation(
+  session: NonNullable<Awaited<ReturnType<typeof getCurrentAuthSession>>>,
+): Promise<PneuRecommendationSummary | null> {
+  const dashboard = await loadDashboard(session);
+  const recommendation = dashboard.recommendations[0];
+
+  if (!recommendation) {
+    return null;
+  }
+
+  return {
+    description: recommendation.wheel.description,
+    model: recommendation.wheel.model,
+    reason: recommendation.reason,
+    score: recommendation.score,
+    tubelessReady: recommendation.wheel.tubelessReady,
+    wheelSize: recommendation.wheel.wheelType.wheelSize,
+    wheelTypeTitle: recommendation.wheel.wheelType.title,
+  };
 }

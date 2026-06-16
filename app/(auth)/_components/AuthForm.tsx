@@ -9,6 +9,7 @@ type AuthMode = "login" | "register";
 
 type AuthFormProps = {
   mode: AuthMode;
+  redirectTo?: string;
 };
 
 const inputClass =
@@ -16,7 +17,7 @@ const inputClass =
 
 const labelClass = "text-sm font-bold text-bleu-fonce";
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, redirectTo = "/pneu" }: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -57,7 +58,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.replace("/pneu");
+      router.replace(redirectTo);
       router.refresh();
     } catch {
       setError("Connexion impossible. Réessayez dans un instant.");
@@ -145,7 +146,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <p className="text-center text-sm font-medium text-encre-2">
         {isRegister ? "Déjà inscrit ?" : "Pas encore de compte ?"}{" "}
         <Link
-          href={isRegister ? "/login" : "/register"}
+          href={getAuthSwitchHref(isRegister ? "/login" : "/register", redirectTo)}
           className="font-bold text-bleu-fonce transition-colors hover:text-bleu"
         >
           {isRegister ? "Se connecter" : "Créer un compte"}
@@ -238,6 +239,12 @@ function readFormString(formData: FormData, key: string) {
   const value = formData.get(key);
 
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getAuthSwitchHref(path: "/login" | "/register", redirectTo: string) {
+  return redirectTo === "/pneu"
+    ? path
+    : `${path}?next=${encodeURIComponent(redirectTo)}`;
 }
 
 function formatAuthError(message?: string) {
