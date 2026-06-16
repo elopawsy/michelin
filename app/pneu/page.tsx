@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
+import { Badge, Button, Wordmark } from "../_components/ui";
 
 const SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // en minuscules !
 const CHAR = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
@@ -53,37 +55,31 @@ interface Mesure extends Trame {
   recuLe: string;
 }
 
-// Statut pneu -> libellé FR + couleur de la bannière.
+// Statut pneu -> libellé FR + couleur de la bannière (DA §5 États).
 const STATUTS_PNEU: Record<string, { texte: string; classe: string }> = {
   ok: {
     texte: "Tout est bon",
-    classe:
-      "border-green-300 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-300",
+    classe: "border-succes/25 bg-succes-fond text-succes",
   },
   leak: {
     texte: "Fuite détectée",
-    classe:
-      "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+    classe: "border-danger/25 bg-danger-fond text-danger",
   },
   low_pressure: {
     texte: "Pneu sous-gonflé",
-    classe:
-      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+    classe: "border-warning bg-warning-fond text-warning-texte",
   },
   over_pressure: {
     texte: "Pneu sur-gonflé",
-    classe:
-      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+    classe: "border-warning bg-warning-fond text-warning-texte",
   },
   high_temp: {
     texte: "Température élevée",
-    classe:
-      "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
+    classe: "border-danger/25 bg-danger-fond text-danger",
   },
   replace_soon: {
     texte: "À remplacer bientôt",
-    classe:
-      "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300",
+    classe: "border-warning bg-warning-fond text-warning-texte",
   },
 };
 
@@ -170,119 +166,152 @@ export default function PneuPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-8 px-6 py-16">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Capteur de pneu</h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
-          Test de connexion Bluetooth (Web Bluetooth API).
-        </p>
+    <div className="flex min-h-full flex-col bg-fond text-encre">
+      <header className="sticky top-0 z-40 border-b border-bordure bg-carte/85 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 py-4 lg:px-10">
+          <Link href="/" aria-label="Michelin Ride — accueil">
+            <Wordmark />
+          </Link>
+          <nav className="flex items-center gap-7" aria-label="Navigation">
+            <Link
+              href="/"
+              className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
+            >
+              Accueil
+            </Link>
+            <Link
+              href="/#gamme"
+              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
+            >
+              La gamme
+            </Link>
+          </nav>
+        </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={connecterPneu}
-          disabled={statut === "connexion" || statut === "connecté"}
-          className="flex h-11 items-center justify-center rounded-full bg-foreground px-6 font-medium text-background transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {statut === "connexion" ? "Connexion…" : "Connecter le pneu"}
-        </button>
-        {statut === "connecté" && (
-          <button
-            onClick={deconnecter}
-            className="flex h-11 items-center justify-center rounded-full border border-black/15 px-6 font-medium transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
-          >
-            Déconnecter
-          </button>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12 lg:py-16">
+        <p className="text-[13px] leading-[18px] font-bold tracking-[0.18em] text-bleu uppercase">
+          Diagnostic en direct
+        </p>
+        <h1 className="mt-3 text-[clamp(1.875rem,4vw,2.5rem)] leading-[1.15] font-extrabold tracking-[-0.01em] text-encre italic">
+          Capteur de pneu
+        </h1>
+        <p className="mt-3 max-w-xl text-base leading-[1.6] text-encre-2">
+          Connectez le pneu Michelin Ride en Bluetooth et lisez ses données en
+          temps réel&nbsp;: pression, usure, surface et durée de vie restante.
+        </p>
+
+        {/* Connexion */}
+        <section className="mt-8 rounded-card border border-bordure bg-carte p-6 shadow-card sm:p-7">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                onClick={connecterPneu}
+                disabled={statut === "connexion" || statut === "connecté"}
+              >
+                {statut === "connexion" ? "Connexion…" : "Connecter le pneu"}
+              </Button>
+              {statut === "connecté" && (
+                <Button variant="outline" onClick={deconnecter}>
+                  Déconnecter
+                </Button>
+              )}
+            </div>
+            <StatutBadge statut={statut} />
+          </div>
+
+          {appareil && (
+            <p className="mt-4 text-sm text-encre-2">
+              Appareil&nbsp;:{" "}
+              <span className="font-mono text-encre">{appareil}</span>
+            </p>
+          )}
+        </section>
+
+        {erreur && (
+          <p className="mt-4 rounded-card-sm border border-danger/25 bg-danger-fond px-4 py-3 text-sm font-medium text-danger">
+            {erreur}
+          </p>
         )}
-        <Badge statut={statut} />
-      </div>
 
-      {appareil && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Appareil : <span className="font-mono">{appareil}</span>
+        {mesure && <StatutPneu code={mesure.st} />}
+
+        {/* Mesures */}
+        <section
+          className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4"
+          aria-label="Mesures du pneu"
+        >
+          <Carte
+            label="Pression"
+            valeur={mesure ? mesure.p.toFixed(2) : "—"}
+            unite="bar"
+            note={mesure ? `optimal ${mesure.po.toFixed(2)} bar` : undefined}
+          />
+          <Carte label="Usure" valeur={mesure ? mesure.w.toFixed(0) : "—"} unite="%" />
+          <Carte
+            label="Vitesse"
+            valeur={mesure ? mesure.v.toFixed(1) : "—"}
+            unite="km/h"
+          />
+          <Carte
+            label="Temp. pneu"
+            valeur={mesure ? mesure.tt.toFixed(1) : "—"}
+            unite="°C"
+          />
+          <Carte
+            label="Temp. ambiante"
+            valeur={mesure ? mesure.ta.toFixed(1) : "—"}
+            unite="°C"
+          />
+          <Carte
+            label="Distance"
+            valeur={mesure ? mesure.d.toFixed(0) : "—"}
+            unite="km"
+          />
+          <Carte
+            label="Vie restante"
+            valeur={mesure ? mesure.rem.toFixed(0) : "—"}
+            unite="km"
+          />
+          <Carte
+            label="Résist. roulement"
+            valeur={mesure ? mesure.rr.toFixed(1) : "—"}
+            unite="W"
+          />
+          <Carte
+            label="Surface"
+            valeur={mesure ? (SURFACES[mesure.surf] ?? mesure.surf) : "—"}
+            unite=""
+          />
+          <Carte
+            label="Batterie"
+            valeur={mesure ? mesure.bat.toFixed(0) : "—"}
+            unite="%"
+          />
+        </section>
+        {mesure && (
+          <p className="mt-3 text-xs text-encre-3">
+            Dernière mesure reçue à {mesure.recuLe}
+          </p>
+        )}
+
+        {/* Journal */}
+        <section className="mt-8 rounded-card border border-bordure bg-carte p-6 shadow-card">
+          <h2 className="text-[13px] leading-[18px] font-bold tracking-[0.16em] text-encre-3 uppercase">
+            Journal
+          </h2>
+          <pre className="mt-4 max-h-64 overflow-auto rounded-xs border border-bordure bg-fond p-4 font-mono text-xs leading-relaxed text-encre-2">
+            {journal.length ? journal.join("\n") : "En attente…"}
+          </pre>
+        </section>
+
+        <p className="mt-6 text-[13px] leading-[18px] text-encre-3">
+          Nécessite Chrome ou Edge, sur <span className="font-mono">https://</span>{" "}
+          ou <span className="font-mono">localhost</span>. Firefox et Safari ne
+          supportent pas le Web Bluetooth.
         </p>
-      )}
-
-      {erreur && (
-        <p className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {erreur}
-        </p>
-      )}
-
-      {mesure && <StatutPneu code={mesure.st} />}
-
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Carte
-          label="Pression"
-          valeur={mesure ? mesure.p.toFixed(2) : "—"}
-          unite="bar"
-          note={mesure ? `optimal : ${mesure.po.toFixed(2)} bar` : undefined}
-        />
-        <Carte
-          label="Usure"
-          valeur={mesure ? mesure.w.toFixed(0) : "—"}
-          unite="%"
-        />
-        <Carte
-          label="Vitesse"
-          valeur={mesure ? mesure.v.toFixed(1) : "—"}
-          unite="km/h"
-        />
-        <Carte
-          label="Temp. pneu"
-          valeur={mesure ? mesure.tt.toFixed(1) : "—"}
-          unite="°C"
-        />
-        <Carte
-          label="Temp. ambiante"
-          valeur={mesure ? mesure.ta.toFixed(1) : "—"}
-          unite="°C"
-        />
-        <Carte
-          label="Distance"
-          valeur={mesure ? mesure.d.toFixed(0) : "—"}
-          unite="km"
-        />
-        <Carte
-          label="Restant"
-          valeur={mesure ? mesure.rem.toFixed(0) : "—"}
-          unite="km"
-        />
-        <Carte
-          label="Résist. roulement"
-          valeur={mesure ? mesure.rr.toFixed(1) : "—"}
-          unite="W"
-        />
-        <Carte
-          label="Surface"
-          valeur={mesure ? (SURFACES[mesure.surf] ?? mesure.surf) : "—"}
-          unite=""
-        />
-        <Carte
-          label="Batterie"
-          valeur={mesure ? mesure.bat.toFixed(0) : "—"}
-          unite="%"
-        />
-      </section>
-      {mesure && (
-        <p className="-mt-4 text-xs text-zinc-500">
-          Dernière mesure reçue à {mesure.recuLe}
-        </p>
-      )}
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-medium text-zinc-500">Journal</h2>
-        <pre className="max-h-64 overflow-auto rounded-lg border border-black/10 bg-zinc-50 p-4 font-mono text-xs leading-relaxed text-zinc-700 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300">
-          {journal.length ? journal.join("\n") : "En attente…"}
-        </pre>
-      </section>
-
-      <p className="text-xs text-zinc-500">
-        Nécessite Chrome ou Edge, sur <span className="font-mono">https://</span>{" "}
-        ou <span className="font-mono">localhost</span>. Firefox et Safari ne
-        supportent pas le Web Bluetooth.
-      </p>
-    </main>
+      </main>
+    </div>
   );
 }
 
@@ -298,17 +327,17 @@ function Carte({
   note?: string;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
-      <span className="text-sm text-zinc-500">{label}</span>
-      <span className="text-3xl font-semibold tabular-nums">
+    <div className="rounded-card-sm border border-bordure bg-carte p-5 shadow-card">
+      <p className="text-[13px] leading-[18px] font-bold text-encre-2">{label}</p>
+      <p className="mt-2 text-[2rem] leading-[1.1] font-extrabold text-encre tabular-nums sm:text-[2.5rem]">
         {valeur}
         {unite && (
-          <span className="ml-1 text-base font-normal text-zinc-400">
+          <span className="ml-1 align-baseline text-base font-semibold text-encre-3">
             {unite}
           </span>
         )}
-      </span>
-      {note && <span className="text-xs text-zinc-400">{note}</span>}
+      </p>
+      {note && <p className="mt-1 text-xs text-encre-3">{note}</p>}
     </div>
   );
 }
@@ -316,32 +345,36 @@ function Carte({
 function StatutPneu({ code }: { code: string }) {
   const s = STATUTS_PNEU[code] ?? {
     texte: code,
-    classe:
-      "border-zinc-300 bg-zinc-50 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300",
+    classe: "border-bordure bg-bleu-leger text-encre-2",
   };
   return (
     <p
-      className={`rounded-lg border px-4 py-3 text-sm font-medium ${s.classe}`}
+      className={`mt-6 rounded-card-sm border px-4 py-3 text-sm font-bold ${s.classe}`}
     >
       {s.texte}
     </p>
   );
 }
 
-function Badge({ statut }: { statut: Statut }) {
-  const styles: Record<Statut, string> = {
-    inactif: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-    connexion: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-    connecté: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-    erreur: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
-  };
-  return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${styles[statut]}`}
-    >
-      {statut}
-    </span>
-  );
+function StatutBadge({ statut }: { statut: Statut }) {
+  switch (statut) {
+    case "connecté":
+      return (
+        <Badge variant="connecte">
+          <span
+            className="pulse-dot h-2 w-2 rounded-full bg-succes"
+            aria-hidden="true"
+          />
+          Connecté
+        </Badge>
+      );
+    case "connexion":
+      return <Badge variant="warning">Connexion…</Badge>;
+    case "erreur":
+      return <Badge variant="danger">Erreur</Badge>;
+    default:
+      return <Badge variant="neutre">Inactif</Badge>;
+  }
 }
 
 function horodatage() {

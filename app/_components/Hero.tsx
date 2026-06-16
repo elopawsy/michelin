@@ -90,7 +90,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal as="h1" delay={80}>
-            <span className="mt-7 block text-[clamp(2.5rem,6vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.02em] text-encre">
+            <span className="mt-7 block text-[clamp(2.5rem,6vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.02em] text-encre italic">
               Le gravel haut de gamme,
               <br />
               par-delà le bitume.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BikeMark } from "./_components/BikeMark";
 import { Hero } from "./_components/Hero";
 import { SiteHeader } from "./_components/SiteHeader";
 import { Counter, Reveal } from "./_components/motion";
@@ -7,6 +8,7 @@ import { ArrowRight, Badge, ButtonLink } from "./_components/ui";
 export default function Home() {
   return (
     <div className="bg-fond text-encre">
+      <BikeMark />
       <SiteHeader />
       <main>
         <Hero />
@@ -35,7 +37,7 @@ const H2 = ({
 }) => (
   <h2
     id={id}
-    className="mt-5 max-w-2xl text-[clamp(1.75rem,3.6vw,2rem)] leading-[1.2] font-extrabold tracking-[-0.01em] text-encre"
+    className="mt-5 max-w-2xl text-[clamp(1.75rem,3.6vw,2rem)] leading-[1.2] font-extrabold tracking-[-0.01em] text-encre italic"
   >
     {children}
   </h2>
@@ -345,7 +347,7 @@ function UniversCard({
             <Badge variant="premium">Gravel d&apos;abord</Badge>
           </span>
         )}
-        <h3 className="text-[1.5rem] leading-8 font-bold text-encre">{name}</h3>
+        <h3 className="text-[1.5rem] leading-8 font-bold text-encre italic">{name}</h3>
         <p className="mt-2 max-w-sm text-base leading-[1.6] text-encre-2">{line}</p>
         <Link
           href="#gamme"
@@ -368,7 +370,7 @@ function Preuve() {
       <div className="mx-auto max-w-[1100px] px-6 py-20 lg:px-10 lg:py-32">
         <Reveal>
           <blockquote>
-            <p className="max-w-4xl text-[clamp(1.5rem,3.6vw,2.5rem)] leading-[1.2] font-extrabold tracking-[-0.01em]">
+            <p className="max-w-4xl text-[clamp(1.5rem,3.6vw,2.5rem)] leading-[1.2] font-extrabold tracking-[-0.01em] italic">
               «&nbsp;Au bout de deux cents kilomètres de cailloux, j&apos;avais
               oublié mes pneus. C&apos;est le plus beau compliment que je puisse
               leur faire.&nbsp;»

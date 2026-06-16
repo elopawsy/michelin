@@ -2,28 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ButtonLink } from "./ui";
+import { ButtonLink, Wordmark } from "./ui";
 
 const LINKS = [
   { href: "#connecte", label: "Le pneu connecté" },
   { href: "#gamme", label: "La gamme" },
   { href: "#heritage", label: "Héritage" },
 ];
-
-function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`flex items-baseline gap-2 ${className}`}>
-      <span className="text-sm font-extrabold tracking-[0.24em] text-bleu-fonce uppercase">
-        Michelin
-      </span>
-      <span className="text-lg leading-none font-bold text-bleu">Ride</span>
-      <span
-        className="h-1.5 w-1.5 self-end rounded-full bg-jaune"
-        aria-hidden="true"
-      />
-    </span>
-  );
-}
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
