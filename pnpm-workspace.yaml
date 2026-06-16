@@ -1,6 +1,7 @@
 # Dépendances autorisées à exécuter leurs scripts de build (pnpm 11+).
 allowBuilds:
   '@prisma/engines': true
+  esbuild: true
   prisma: true
   sharp: true
   unrs-resolver: true
