@@ -1,0 +1,60 @@
+# Docker Compose — DÉVELOPPEMENT LOCAL
+#
+# Usage courant : ne lancer que la base et faire tourner l'app avec `pnpm dev`.
+#   docker compose up -d db          # démarre PostgreSQL (+ Adminer)
+#   pnpm install && pnpm dev         # l'app sur http://localhost:3000
+#
+# Première fois (génère/applique les migrations) :
+#   pnpm prisma migrate dev
+#
+# Pour aussi lancer l'app en conteneur (parité prod) :
+#   docker compose --profile app up --build
+
+name: michelin
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: michelin
+      POSTGRES_PASSWORD: michelin
+      POSTGRES_DB: michelin
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U michelin -d michelin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # UI web pour inspecter la base → http://localhost:8080
+  # (serveur: db, utilisateur: michelin, mot de passe: michelin, base: michelin)
+  adminer:
+    image: adminer:5
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Optionnel (profil "app") : l'application complète buildée localement.
+  app:
+    profiles: ["app"]
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://michelin:michelin@db:5432/michelin
+      JWT_SECRET: dev-secret-change-me
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

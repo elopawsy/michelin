@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { Badge, Button, Picto, Wordmark } from "../_components/ui";
+import { Badge, Button, ButtonLink, Picto, Wordmark } from "../_components/ui";
 
 const SERVICE = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"; // en minuscules !
 const CHAR = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
@@ -36,67 +36,20 @@ interface Ble {
 type Statut = "inactif" | "connexion" | "connecté" | "erreur";
 
 // Trame JSON émise par le firmware ESP32 (clés courtes pour tenir dans le MTU).
+// Le vélo a deux pneus : pression et usure sont donc dédoublées avant / arrière.
 interface Trame {
-  p: number; // pression (bar)
-  po: number; // pression optimale (bar)
-  tt: number; // température pneu (°C)
-  ta: number; // température ambiante (°C)
+  pf: number; // pression avant (bar)
+  pr: number; // pression arrière (bar)
+  wf: number; // usure avant (%)
+  wr: number; // usure arrière (%)
   v: number; // vitesse (km/h)
   d: number; // distance / odomètre (km)
-  w: number; // usure (%)
-  rem: number; // durée de vie restante (km)
-  rr: number; // résistance au roulement (W)
-  surf: string; // surface : tarmac | gravel | rough
-  st: string; // statut : ok | leak | low_pressure | over_pressure | high_temp | replace_soon
   bat: number; // batterie (%)
 }
 
 interface Mesure extends Trame {
   recuLe: string;
 }
-
-// Statut pneu -> libellé FR + couleur de la bannière (DA §5 États).
-const STATUTS_PNEU: Record<
-  string,
-  { texte: string; classe: string; icon: string }
-> = {
-  ok: {
-    texte: "Tout est bon",
-    classe: "border-succes/25 bg-succes-fond text-succes",
-    icon: "security",
-  },
-  leak: {
-    texte: "Fuite détectée",
-    classe: "border-danger/25 bg-danger-fond text-danger",
-    icon: "assistance",
-  },
-  low_pressure: {
-    texte: "Pneu sous-gonflé",
-    classe: "border-warning bg-warning-fond text-warning-texte",
-    icon: "car-tire-pressure",
-  },
-  over_pressure: {
-    texte: "Pneu sur-gonflé",
-    classe: "border-warning bg-warning-fond text-warning-texte",
-    icon: "car-tire-pressure",
-  },
-  high_temp: {
-    texte: "Température élevée",
-    classe: "border-danger/25 bg-danger-fond text-danger",
-    icon: "assistance",
-  },
-  replace_soon: {
-    texte: "À remplacer bientôt",
-    classe: "border-warning bg-warning-fond text-warning-texte",
-    icon: "inspect-tire-side",
-  },
-};
-
-const SURFACES: Record<string, string> = {
-  tarmac: "Route",
-  gravel: "Gravel",
-  rough: "Chemin",
-};
 
 export default function PneuPage() {
   const [statut, setStatut] = useState<Statut>("inactif");
@@ -194,9 +147,9 @@ export default function PneuPage() {
               Capteur de pneu
             </h1>
             <p className="mt-3 text-base leading-[1.6] text-encre-2">
-              Connectez le pneu Michelin Ride en Bluetooth et lisez ses données
-              en temps réel&nbsp;: pression, usure, surface et durée de vie
-              restante.
+              Connectez votre vélo Michelin Ride en Bluetooth et lisez ses
+              données en temps réel&nbsp;: pression et usure de chaque pneu,
+              distance, vitesse et batterie.
             </p>
           </div>
 
@@ -231,26 +184,42 @@ export default function PneuPage() {
           </p>
         )}
 
-        {mesure && <StatutPneu code={mesure.st} />}
-
-        {/* Mesures */}
+        {/* Pneus — pression & usure par pneu (avant / arrière) */}
         <section
           className="mt-8 grid grid-cols-2 gap-4 sm:gap-5"
-          aria-label="Mesures du pneu"
+          aria-label="Pression et usure par pneu"
         >
           <Carte
-            label="Pression"
+            label="Pression avant"
             icon="car-tire-pressure"
-            valeur={mesure ? mesure.p.toFixed(2) : "—"}
+            valeur={mesure ? mesure.pf.toFixed(2) : "—"}
             unite="bar"
-            note={mesure ? `optimal ${mesure.po.toFixed(2)} bar` : undefined}
           />
           <Carte
-            label="Usure"
+            label="Pression arrière"
+            icon="car-tire-pressure"
+            valeur={mesure ? mesure.pr.toFixed(2) : "—"}
+            unite="bar"
+          />
+          <Carte
+            label="Usure avant"
             icon="tread-durability"
-            valeur={mesure ? mesure.w.toFixed(0) : "—"}
+            valeur={mesure ? mesure.wf.toFixed(0) : "—"}
             unite="%"
           />
+          <Carte
+            label="Usure arrière"
+            icon="tread-durability"
+            valeur={mesure ? mesure.wr.toFixed(0) : "—"}
+            unite="%"
+          />
+        </section>
+
+        {/* Vélo — mesures globales */}
+        <section
+          className="mt-4 grid grid-cols-2 gap-4 sm:mt-5 sm:grid-cols-3 sm:gap-5"
+          aria-label="Mesures du vélo"
+        >
           <Carte
             label="Vitesse"
             icon="speed-rating"
@@ -258,40 +227,10 @@ export default function PneuPage() {
             unite="km/h"
           />
           <Carte
-            label="Temp. pneu"
-            icon="temperature"
-            valeur={mesure ? mesure.tt.toFixed(1) : "—"}
-            unite="°C"
-          />
-          <Carte
-            label="Temp. ambiante"
-            icon="temperature"
-            valeur={mesure ? mesure.ta.toFixed(1) : "—"}
-            unite="°C"
-          />
-          <Carte
             label="Distance"
             icon="mileage"
             valeur={mesure ? mesure.d.toFixed(0) : "—"}
             unite="km"
-          />
-          <Carte
-            label="Vie restante"
-            icon="tread-life"
-            valeur={mesure ? mesure.rem.toFixed(0) : "—"}
-            unite="km"
-          />
-          <Carte
-            label="Résist. roulement"
-            icon="energy-efficiency"
-            valeur={mesure ? mesure.rr.toFixed(1) : "—"}
-            unite="W"
-          />
-          <Carte
-            label="Surface"
-            icon="traction"
-            valeur={mesure ? (SURFACES[mesure.surf] ?? mesure.surf) : "—"}
-            unite=""
           />
           <Carte
             label="Batterie"
@@ -305,6 +244,8 @@ export default function PneuPage() {
             Dernière mesure reçue à {mesure.recuLe}
           </p>
         )}
+
+        <RecoPub mesure={mesure} />
       </main>
     </div>
   );
@@ -314,13 +255,11 @@ function Carte({
   label,
   valeur,
   unite,
-  note,
   icon,
 }: {
   label: string;
   valeur: string;
   unite: string;
-  note?: string;
   icon?: string;
 }) {
   const vide = valeur === "—";
@@ -347,24 +286,46 @@ function Carte({
           </span>
         )}
       </p>
-      {note && <p className="relative mt-1.5 text-right text-xs text-encre-3">{note}</p>}
     </div>
   );
 }
 
-function StatutPneu({ code }: { code: string }) {
-  const s = STATUTS_PNEU[code] ?? {
-    texte: code,
-    classe: "border-bordure bg-bleu-leger text-encre-2",
-    icon: "inspect-tire-side",
-  };
+// Recommandation pneu en mode pub (DA §11). L'accroche s'adapte au pneu le plus
+// usé quand des mesures sont disponibles, sinon message générique.
+function RecoPub({ mesure }: { mesure: Mesure | null }) {
+  const usureMax = mesure ? Math.max(mesure.wf, mesure.wr) : null;
+  const pneuUse = mesure && mesure.wf >= mesure.wr ? "avant" : "arrière";
+  const accroche =
+    usureMax === null
+      ? "Le pneu pensé pour votre profil, prêt à mordre sur tous les terrains."
+      : usureMax >= 40
+        ? `Votre pneu ${pneuUse} est usé à ${usureMax.toFixed(0)} %. C'est le moment de penser au remplacement.`
+        : "Gardez le meilleur grip, kilomètre après kilomètre, avec le pneu fait pour vous.";
+
   return (
-    <p
-      className={`mt-6 flex items-center gap-2.5 rounded-card-sm border px-4 py-3 text-sm font-bold ${s.classe}`}
+    <section
+      aria-label="Recommandation Michelin"
+      className="relative mt-10 overflow-hidden rounded-card bg-bleu-fonce p-7 text-white shadow-pneu sm:p-9"
     >
-      <Picto name={s.icon} className="h-5 w-5" />
-      {s.texte}
-    </p>
+      <Picto
+        name="bicycle-tire"
+        className="pointer-events-none absolute -right-10 -bottom-10 h-52 w-52 text-white/10 sm:h-64 sm:w-64"
+      />
+      <div className="relative max-w-md">
+        <Badge variant="premium">Recommandé pour vous</Badge>
+        <p className="mt-4 text-sm font-semibold text-jaune">Michelin Ride</p>
+        <h2 className="mt-1 text-[clamp(1.5rem,3vw,2rem)] leading-[1.1] font-extrabold tracking-[-0.01em] text-white italic">
+          Ride Gravel 700 × 42
+        </h2>
+        <p className="mt-3 text-sm leading-[1.6] text-white/70">{accroche}</p>
+        <p className="mt-1 text-sm text-white/50">
+          Tubeless · gomme tendre · carcasse souple
+        </p>
+        <ButtonLink href="/#gamme" variant="primary" className="mt-6">
+          Découvrir le pneu
+        </ButtonLink>
+      </div>
+    </section>
   );
 }
 

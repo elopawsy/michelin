@@ -1,0 +1,43 @@
+# Docker Compose — PRODUCTION (VPS)
+#
+# À placer sur le serveur dans /opt/michelin/ avec un fichier .env (voir DEPLOY.md).
+# Le CI/CD pousse l'image sur GHCR ; le VPS fait ensuite :
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# L'app n'est exposée que sur 127.0.0.1:3000 → ton reverse proxy (nginx/Caddy)
+# proxifie ton domaine vers ce port.
+
+name: michelin
+
+services:
+  web:
+    image: ghcr.io/elopawsy/michelin:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://michelin:${POSTGRES_PASSWORD}@db:5432/michelin
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3001:3000"
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: michelin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: michelin
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U michelin -d michelin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
