@@ -1,15 +1,17 @@
 import "server-only";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-const databaseUrl = process.env.DATABASE_URL ?? "file:./dev.db";
+const databaseUrl =
+  process.env.DATABASE_URL ??
+  "postgres://michelin:michelin@localhost:5432/michelin";
 
-const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
+const adapter = new PrismaPg({ connectionString: databaseUrl });
 
 const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 

@@ -7,6 +7,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL ?? "file:./dev.db",
+    url:
+      process.env.DATABASE_URL ??
+      "postgres://michelin:michelin@localhost:5432/michelin",
   },
 });
