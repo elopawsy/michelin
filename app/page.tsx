@@ -56,6 +56,12 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Mini footer discret */}
+      <footer className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-1 px-6 pb-7 text-[13px] font-medium text-bleu-fonce/55 sm:flex-row sm:items-center sm:justify-between lg:px-12">
+        <span>Hackathon ESGI — M2</span>
+        <span>© 2026 Michelin Ride</span>
+      </footer>
     </div>
   );
 }

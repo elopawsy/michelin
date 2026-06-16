@@ -23,15 +23,21 @@ export function ButtonLink({
   variant = "primary",
   className = "",
   children,
+  target,
+  rel,
 }: {
   href: string;
   variant?: keyof typeof buttonVariants;
   className?: string;
   children: ReactNode;
+  target?: string;
+  rel?: string;
 }) {
   return (
     <Link
       href={href}
+      target={target}
+      rel={rel}
       className={`${buttonBase} ${buttonVariants[variant]} ${className}`}
     >
       {children}
@@ -142,5 +148,41 @@ export function ArrowRight({ className = "" }: { className?: string }) {
     >
       <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+export function ArrowLeft({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      aria-hidden="true"
+    >
+      <path d="M19 12H5M11 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/* Bouton retour du stepper — flèche ← qui ramène à l'étape précédente.
+   Zone tactile 40px, sans bordure (style maquette), décalé à gauche pour
+   s'aligner sur le bord de la carte. */
+export function BackLink({
+  href,
+  className = "",
+}: {
+  href: string;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label="Étape précédente"
+      className={`-ml-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-encre-2 transition-colors duration-200 hover:bg-bleu-leger hover:text-bleu-fonce ${className}`}
+    >
+      <ArrowLeft className="h-5 w-5" />
+    </Link>
   );
 }
