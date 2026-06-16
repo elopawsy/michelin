@@ -3,7 +3,7 @@ import "server-only";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
 
-const AUTH_COOKIE = "auth_token";
+export const AUTH_COOKIE = "auth_token";
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 export type AuthSession = {
@@ -106,9 +106,14 @@ export function getTokenFromRequest(request: NextRequest) {
   return request.cookies.get(AUTH_COOKIE)?.value ?? null;
 }
 
-export function requireAuth(request: NextRequest) {
+export function getAuthSessionFromRequest(request: NextRequest) {
   const token = getTokenFromRequest(request);
-  const session = token ? verifyAuthToken(token) : null;
+
+  return token ? verifyAuthToken(token) : null;
+}
+
+export function requireAuth(request: NextRequest) {
+  const session = getAuthSessionFromRequest(request);
 
   if (!session) {
     throw new Error("Unauthorized");

@@ -21,7 +21,7 @@ services:
       POSTGRES_PASSWORD: michelin
       POSTGRES_DB: michelin
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
