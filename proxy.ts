@@ -4,6 +4,20 @@ import { getAuthSessionFromRequest } from "@/lib/auth";
 const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
+/* Préfixes publics : accessibles sans authentification (contenu SEO/organique).
+   Le blog « Le Mag » doit rester crawlable et lisible par les visiteurs non
+   connectés — il ne doit jamais rediriger vers /login. */
+const PUBLIC_PREFIXES = ["/blog"];
+
+function isPublic(pathname: string): boolean {
+  return (
+    PUBLIC_PATHS.has(pathname) ||
+    PUBLIC_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    )
+  );
+}
+
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const session = getAuthSessionFromRequest(request);
@@ -16,7 +30,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (PUBLIC_PATHS.has(pathname)) {
+  if (isPublic(pathname)) {
     return NextResponse.next();
   }
 
