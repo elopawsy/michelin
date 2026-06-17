@@ -37,6 +37,31 @@ export default function OfflinePage() {
             Réessayer le capteur
           </Link>
         </div>
+        <section className="mt-10 border-t border-bordure pt-6">
+          <h2 className="text-sm font-bold tracking-[0.14em] text-bleu uppercase">
+            Disponible hors ligne
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/jeu"
+              className="inline-flex h-11 items-center justify-center rounded-pill bg-bleu-fonce px-5 text-sm font-bold text-white transition duration-200 hover:-translate-y-px hover:bg-bleu-nuit active:scale-[0.98]"
+            >
+              Le jeu
+            </Link>
+            <Link
+              href="/blog"
+              className="inline-flex h-11 items-center justify-center rounded-pill border border-bleu px-5 text-sm font-bold text-bleu-fonce transition duration-200 hover:-translate-y-px hover:bg-bleu-leger active:scale-[0.98]"
+            >
+              Le Mag
+            </Link>
+            <Link
+              href="/catalogue"
+              className="inline-flex h-11 items-center justify-center rounded-pill border border-bleu px-5 text-sm font-bold text-bleu-fonce transition duration-200 hover:-translate-y-px hover:bg-bleu-leger active:scale-[0.98]"
+            >
+              Catalogue
+            </Link>
+          </div>
+        </section>
       </main>
     </div>
   );
