@@ -60,66 +60,74 @@ export default async function RecommandationsPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-6 py-10 lg:px-10 lg:py-12">
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-          <div>
-            <Badge variant="premium">Michelin Ride</Badge>
-            <h1 className="mt-5 max-w-3xl text-[clamp(2rem,5vw,3.5rem)] font-extrabold leading-[1.02] tracking-[-0.01em] text-bleu-fonce">
-              Vos recommandations pneus
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-[1.65] text-encre-2">
-              Retrouvez les pneus calculés à partir de votre vélo, de votre
-              terrain, de vos priorités et de votre kilométrage hebdomadaire.
-            </p>
-          </div>
+      <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-7 px-6 py-10 lg:px-10 lg:py-12">
+        <section>
+          <Badge variant="premium">Michelin Ride</Badge>
+          <h1 className="mt-5 max-w-4xl text-[clamp(2rem,5vw,3.5rem)] font-extrabold leading-[1.02] tracking-[-0.01em] text-bleu-fonce">
+            Vos recommandations pneus
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-[1.65] text-encre-2">
+            Retrouvez les pneus calculés à partir de votre vélo, de votre
+            terrain, de vos priorités et de votre kilométrage hebdomadaire.
+          </p>
 
-          <div className="rounded-card border border-bordure bg-carte p-6 shadow-card">
-            <p className="text-xs font-bold uppercase tracking-[0.08em] text-bleu">
-              Dernière configuration
-            </p>
-            {latestBicycle || latestPreference ? (
-              <dl className="mt-5 grid gap-4 text-sm">
-                {latestBicycle && (
-                  <>
-                    <SummaryRow label="Vélo" value={latestBicycle.name} />
-                    <SummaryRow
-                      label="Type"
-                      value={latestBicycle.bicycleModel.bicycleType.title}
-                    />
-                    <SummaryRow
-                      label="Roues"
-                      value={`${latestBicycle.wheelSize}, ${latestBicycle.tireWidthMm} mm`}
-                    />
-                  </>
+          <div className="mt-7 rounded-card border border-bordure bg-carte p-5 shadow-card lg:p-6">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-bleu">
+                  Dernière configuration
+                </p>
+                {latestBicycle || latestPreference ? (
+                  <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-4 text-sm sm:grid-cols-3 xl:grid-cols-[minmax(180px,1.5fr)_repeat(5,minmax(0,1fr))]">
+                    {latestBicycle && (
+                      <>
+                        <SummaryItem label="Vélo" value={latestBicycle.name} />
+                        <SummaryItem
+                          label="Type"
+                          value={latestBicycle.bicycleModel.bicycleType.title}
+                        />
+                        <SummaryItem
+                          label="Roues"
+                          value={`${latestBicycle.wheelSize}, ${latestBicycle.tireWidthMm} mm`}
+                        />
+                      </>
+                    )}
+                    {latestPreference && (
+                      <>
+                        <SummaryItem
+                          label="Terrain"
+                          value={latestPreference.roadSurface.title}
+                        />
+                        <SummaryItem
+                          label="Objectif"
+                          value={latestPreference.goal.title}
+                        />
+                        <SummaryItem
+                          label="Distance"
+                          value={`${latestPreference.weeklyDistanceKm.toFixed(0)} km / semaine`}
+                        />
+                      </>
+                    )}
+                  </dl>
+                ) : (
+                  <p className="mt-4 text-sm leading-[1.6] text-encre-2">
+                    Aucune configuration enregistrée pour le moment.
+                  </p>
                 )}
-                {latestPreference && (
-                  <>
-                    <SummaryRow label="Terrain" value={latestPreference.roadSurface.title} />
-                    <SummaryRow label="Objectif" value={latestPreference.goal.title} />
-                    <SummaryRow
-                      label="Distance"
-                      value={`${latestPreference.weeklyDistanceKm.toFixed(0)} km / semaine`}
-                    />
-                  </>
-                )}
-              </dl>
-            ) : (
-              <p className="mt-4 text-sm leading-[1.6] text-encre-2">
-                Aucune configuration enregistrée pour le moment.
-              </p>
-            )}
-            <div className="mt-5 border-t border-bordure pt-5">
-              <p className="text-sm leading-[1.55] text-encre-2">
-                Votre profil a changé&nbsp;? Reprenez le questionnaire pour
-                mettre à jour vos recommandations.
-              </p>
-              <ButtonLink
-                href="/configurateur"
-                variant="outline"
-                className="mt-4 w-full"
-              >
-                Refaire le questionnaire
-              </ButtonLink>
+              </div>
+
+              <div className="border-t border-bordure pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
+                <p className="text-sm leading-[1.55] text-encre-2">
+                  Votre profil a changé&nbsp;? Reprenez le questionnaire.
+                </p>
+                <ButtonLink
+                  href="/configurateur"
+                  variant="outline"
+                  className="mt-3 w-full"
+                >
+                  Refaire le questionnaire
+                </ButtonLink>
+              </div>
             </div>
           </div>
         </section>
@@ -149,11 +157,13 @@ export default async function RecommandationsPage() {
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-bordure pb-3 last:border-b-0 last:pb-0">
+    <div className="min-w-0">
       <dt className="font-semibold text-encre-2">{label}</dt>
-      <dd className="text-right font-bold text-bleu-fonce">{value}</dd>
+      <dd className="mt-1 break-words font-extrabold leading-snug text-bleu-fonce">
+        {value}
+      </dd>
     </div>
   );
 }

@@ -27,6 +27,7 @@ export function RecommendationsGrid({
                 alt={recommendation.product.imageAlt}
                 width={800}
                 height={488}
+                loading={index < 3 ? "eager" : "lazy"}
                 className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
               />
               <span className="absolute bottom-2 left-2 rounded-pill bg-white px-2.5 py-1 text-[11px] font-extrabold text-bleu-fonce shadow-cta">
