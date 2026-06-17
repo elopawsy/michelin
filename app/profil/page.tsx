@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { HeaderUserBadge } from "@/app/_components/HeaderUserBadge";
-import { Badge, Wordmark } from "@/app/_components/ui";
-import {
-  getCurrentAuthSession,
-  getCurrentUserSummary,
-} from "@/lib/current-session";
+import { MichelinHeader } from "@/app/_components/MichelinHeader";
+import { Badge } from "@/app/_components/ui";
+import { getCurrentAuthSession } from "@/lib/current-session";
 import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "./_components/ProfileForm";
 
@@ -16,10 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const [session, userSummary] = await Promise.all([
-    getCurrentAuthSession(),
-    getCurrentUserSummary(),
-  ]);
+  const session = await getCurrentAuthSession();
 
   if (!session) {
     redirect("/login?next=/profil");
@@ -43,39 +36,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">
-      <header className="sticky top-0 z-40 border-b border-bordure bg-carte/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 py-4 lg:px-10">
-          <Link href="/" aria-label="Michelin Ride — accueil">
-            <Wordmark />
-          </Link>
-          <nav
-            className="flex items-center gap-5 sm:gap-7"
-            aria-label="Navigation"
-          >
-            <Link
-              href="/configurateur"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              Configurateur
-            </Link>
-            <Link
-              href="/pneu"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              Capteur
-            </Link>
-            <Link
-              href="/recommandations"
-              className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
-            >
-              Recommandations
-            </Link>
-            {userSummary && (
-              <HeaderUserBadge user={userSummary} variant="app" />
-            )}
-          </nav>
-        </div>
-      </header>
+      <MichelinHeader />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-8 px-6 py-10 lg:px-10 lg:py-12">
         <section className="max-w-3xl">
