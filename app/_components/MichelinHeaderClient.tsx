@@ -8,11 +8,13 @@ import {
 } from "./HeaderUserBadge";
 import { Wordmark } from "./ui";
 
-/* `public: true` → lien visible par tous (contenu accessible sans connexion).
+/* `public: true` → lien visible par tous (page accessible sans connexion).
    Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
-const NAV = [
+const NAV: { href: string; label: string; public?: boolean }[] = [
+  { href: "/catalogue", label: "Catalogue", public: true },
+  { href: "/revendeurs", label: "Revendeurs", public: true },
   { href: "/blog", label: "Le Mag", public: true },
-  { href: "/jeu", label: "Le jeu" },
+  { href: "/jeu", label: "Le jeu", public: true },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
   { href: "/recommandations", label: "Recommandations" },
@@ -50,7 +52,7 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="hidden items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10 md:flex"
           aria-label="Navigation principale"
         >
-          {NAV.map((item) => (
+          {NAV.filter((item) => item.public || user).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -117,7 +119,7 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="flex flex-1 flex-col justify-center gap-1 px-6 pb-24"
           aria-label="Navigation mobile"
         >
-          {NAV.map((item, i) => (
+          {NAV.filter((item) => item.public || user).map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
@@ -135,7 +137,9 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           ))}
           <div
             style={{
-              transitionDelay: open ? `${100 + NAV.length * 70}ms` : "0ms",
+              transitionDelay: open
+                ? `${100 + NAV.filter((item) => item.public || user).length * 70}ms`
+                : "0ms",
             }}
             className={`pt-7 transition-[opacity,transform] duration-300 ease-out ${
               open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
