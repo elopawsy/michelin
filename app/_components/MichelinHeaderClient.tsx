@@ -40,21 +40,21 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           <Wordmark className="h-9 sm:h-11" />
         </Link>
 
-        {/* Navigation desktop */}
+        {/* Navigation desktop — liens identiques sur toutes les pages, quel
+            que soit l'état de connexion (cohérence inter-pages). */}
         <nav
           className="hidden items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10 md:flex"
           aria-label="Navigation principale"
         >
-          {user &&
-            NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition-colors hover:text-bleu"
-              >
-                {item.label}
-              </Link>
-            ))}
+          {NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors hover:text-bleu"
+            >
+              {item.label}
+            </Link>
+          ))}
           {user ? (
             <HeaderUserBadge user={user} />
           ) : (
@@ -111,30 +111,25 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="flex flex-1 flex-col justify-center gap-1 px-6 pb-24"
           aria-label="Navigation mobile"
         >
-          {user &&
-            NAV.map((item, i) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                tabIndex={open ? 0 : -1}
-                style={{
-                  transitionDelay: open ? `${100 + i * 70}ms` : "0ms",
-                }}
-                className={`border-b border-bleu-fonce/10 py-5 text-2xl font-extrabold text-bleu-fonce transition-[opacity,transform] duration-300 ease-out ${
-                  open
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-3 opacity-0"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {NAV.map((item, i) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              tabIndex={open ? 0 : -1}
+              style={{
+                transitionDelay: open ? `${100 + i * 70}ms` : "0ms",
+              }}
+              className={`border-b border-bleu-fonce/10 py-5 text-2xl font-extrabold text-bleu-fonce transition-[opacity,transform] duration-300 ease-out ${
+                open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
           <div
             style={{
-              transitionDelay: open
-                ? `${100 + (user ? NAV.length : 0) * 70}ms`
-                : "0ms",
+              transitionDelay: open ? `${100 + NAV.length * 70}ms` : "0ms",
             }}
             className={`pt-7 transition-[opacity,transform] duration-300 ease-out ${
               open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
