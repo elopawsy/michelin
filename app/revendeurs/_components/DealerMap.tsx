@@ -176,10 +176,15 @@ export function DealerMap() {
         leafletRef.current = L;
         const map = L.map(containerRef.current, { scrollWheelZoom: false });
         map.setView([48.5, 5], 4);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "© OpenStreetMap",
-          maxZoom: 18,
-        }).addTo(map);
+        // Fond épuré (CartoDB Positron) : blanc / gris / bleu, accordé à la DA.
+        L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+          {
+            attribution: "© OpenStreetMap, © CARTO",
+            subdomains: "abcd",
+            maxZoom: 19,
+          },
+        ).addTo(map);
 
         for (const country of activeCountries()) {
           const shops = DEALERS.filter((d) => d.country === country.code);
@@ -191,7 +196,16 @@ export function DealerMap() {
                   `<a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.name}</a>`,
               )
               .join("<br/>");
-          L.marker(country.coords).addTo(map).bindPopup(popup);
+          // Repère charté (bleu Michelin, liseré blanc) plutôt que l'épingle par défaut.
+          L.circleMarker(country.coords, {
+            radius: 10,
+            color: "#ffffff",
+            weight: 2,
+            fillColor: MICHELIN_BLUE,
+            fillOpacity: 1,
+          })
+            .addTo(map)
+            .bindPopup(popup);
         }
 
         map.on("click", (e) => {
@@ -223,6 +237,18 @@ export function DealerMap() {
 
   return (
     <div className="overflow-hidden rounded-card border border-bordure bg-carte shadow-card">
+      {/* Accord à la DA Michelin : popups arrondies, polices et couleurs de marque. */}
+      <style>{`
+        .leaflet-container { font-family: var(--font-sans); background: #f7f9fc; }
+        .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 12px 30px rgba(0,12,52,.12); }
+        .leaflet-popup-content { margin: 14px 16px; color: #00205b; line-height: 1.6; }
+        .leaflet-popup-content strong { font-weight: 800; }
+        .leaflet-popup-content a { color: #27509b; font-weight: 700; text-decoration: none; }
+        .leaflet-popup-content a:hover { text-decoration: underline; }
+        .leaflet-bar a { color: #00205b; border-radius: 8px !important; }
+        .leaflet-bar a:hover { background: #eef4ff; }
+        .leaflet-control-attribution { font-size: 10px; background: rgba(255,255,255,.7); }
+      `}</style>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-bordure px-5 py-4">
         <div>
           <p className="text-[13px] font-bold tracking-[0.16em] text-bleu uppercase">

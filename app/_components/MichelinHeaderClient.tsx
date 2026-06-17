@@ -10,6 +10,7 @@ import { Wordmark } from "./ui";
 
 /* `public: true` → lien visible par tous (page accessible sans connexion). */
 const NAV = [
+  { href: "/catalogue", label: "Catalogue", public: true },
   { href: "/revendeurs", label: "Revendeurs", public: true },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },

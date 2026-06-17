@@ -3,7 +3,13 @@ import { getAuthSessionFromRequest } from "@/lib/auth";
 
 // `/revendeurs` est public : un localisateur de boutiques doit rester
 // accessible (et indexable) sans authentification.
-const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/revendeurs"]);
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/login",
+  "/register",
+  "/revendeurs",
+  "/catalogue",
+]);
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
 export function proxy(request: NextRequest) {
