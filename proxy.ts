@@ -1,29 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAuthSessionFromRequest } from "@/lib/auth";
+// import { getAuthSessionFromRequest } from "@/lib/auth";
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
-const AUTH_PATHS = new Set(["/login", "/register"]);
+// const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
+// const AUTH_PATHS = new Set(["/login", "/register"]);
 
-export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
-  const session = getAuthSessionFromRequest(request);
+export function proxy(_request: NextRequest) {
+  void _request;
 
-  if (session) {
-    if (AUTH_PATHS.has(pathname)) {
-      return NextResponse.redirect(new URL("/pneu", request.url));
-    }
+  // Temporary public-access mode: keep proxy active for the matcher, but skip
+  // auth-based redirects so every page can be opened without a session.
+  return NextResponse.next();
 
-    return NextResponse.next();
-  }
+  // const { pathname, search } = request.nextUrl;
+  // const session = getAuthSessionFromRequest(request);
 
-  if (PUBLIC_PATHS.has(pathname)) {
-    return NextResponse.next();
-  }
+  // if (session) {
+  //   if (AUTH_PATHS.has(pathname)) {
+  //     return NextResponse.redirect(new URL("/pneu", request.url));
+  //   }
 
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("next", `${pathname}${search}`);
+  //   return NextResponse.next();
+  // }
 
-  return NextResponse.redirect(loginUrl);
+  // if (PUBLIC_PATHS.has(pathname)) {
+  //   return NextResponse.next();
+  // }
+
+  // const loginUrl = new URL("/login", request.url);
+  // loginUrl.searchParams.set("next", `${pathname}${search}`);
+
+  // return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
