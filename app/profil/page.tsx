@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { HeaderUserBadge } from "@/app/_components/HeaderUserBadge";
-import { Badge, ButtonLink, Wordmark } from "@/app/_components/ui";
+import { Badge, Wordmark } from "@/app/_components/ui";
 import {
   getCurrentAuthSession,
   getCurrentUserSummary,
@@ -21,26 +21,23 @@ export default async function ProfilePage() {
     getCurrentUserSummary(),
   ]);
 
-  // Temporary public-access mode: do not redirect anonymous visitors.
-  // if (!session) {
-  //   redirect("/login?next=/profil");
-  // }
+  if (!session) {
+    redirect("/login?next=/profil");
+  }
 
-  const user = session
-    ? await prisma.user.findUnique({
-        select: {
-          createdAt: true,
-          email: true,
-          firstName: true,
-          id: true,
-          lastName: true,
-          updatedAt: true,
-        },
-        where: { id: session.userId },
-      })
-    : null;
+  const user = await prisma.user.findUnique({
+    select: {
+      createdAt: true,
+      email: true,
+      firstName: true,
+      id: true,
+      lastName: true,
+      updatedAt: true,
+    },
+    where: { id: session.userId },
+  });
 
-  if (session && !user) {
+  if (!user) {
     notFound();
   }
 
@@ -90,53 +87,25 @@ export default async function ProfilePage() {
             Modifiez vos informations personnelles et gérez votre session
             Michelin Ride.
           </p>
-          {user ? (
-            <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-encre-2">
-              <div>
-                <dt className="inline font-semibold text-encre">Créé le </dt>
-                <dd className="inline">{formatDate(user.createdAt)}</dd>
-              </div>
-              <div>
-                <dt className="inline font-semibold text-encre">
-                  Mis à jour le{" "}
-                </dt>
-                <dd className="inline">{formatDate(user.updatedAt)}</dd>
-              </div>
-            </dl>
-          ) : (
-            <p className="mt-5 max-w-2xl text-sm leading-[1.6] text-encre-2">
-              Cette page est temporairement accessible sans connexion. Connectez-vous
-              pour modifier vos informations personnelles.
-            </p>
-          )}
+          <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-encre-2">
+            <div>
+              <dt className="inline font-semibold text-encre">Créé le </dt>
+              <dd className="inline">{formatDate(user.createdAt)}</dd>
+            </div>
+            <div>
+              <dt className="inline font-semibold text-encre">Mis à jour le </dt>
+              <dd className="inline">{formatDate(user.updatedAt)}</dd>
+            </div>
+          </dl>
         </section>
 
-        {user ? (
-          <ProfileForm
-            user={{
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-            }}
-          />
-        ) : (
-          <section className="rounded-card border border-bordure bg-carte p-6 shadow-card sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.08em] text-bleu">
-              Session
-            </p>
-            <h2 className="mt-3 text-2xl font-extrabold text-bleu-fonce">
-              Profil non connecté
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-[1.6] text-encre-2">
-              Les champs de profil restent liés à un compte utilisateur. La
-              protection de page est désactivée temporairement, mais la mise à
-              jour du profil demande toujours une session active.
-            </p>
-            <ButtonLink href="/login" className="mt-6">
-              Se connecter
-            </ButtonLink>
-          </section>
-        )}
+        <ProfileForm
+          user={{
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          }}
+        />
       </main>
     </div>
   );

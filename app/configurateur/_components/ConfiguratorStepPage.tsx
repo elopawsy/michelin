@@ -167,7 +167,7 @@ export function ConfiguratorStepPage({ step }: ConfiguratorStepPageProps) {
       }
 
       clearDraft();
-      router.push("/recommandations");
+      router.push("/pneu");
       router.refresh();
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : String(caught);
