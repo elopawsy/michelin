@@ -44,12 +44,13 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           <Wordmark className="h-9 sm:h-11" />
         </Link>
 
-        {/* Navigation desktop */}
+        {/* Navigation desktop — liens identiques sur toutes les pages, quel
+            que soit l'état de connexion (cohérence inter-pages). */}
         <nav
           className="hidden items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10 md:flex"
           aria-label="Navigation principale"
         >
-          {NAV.filter((item) => item.public || user).map((item) => (
+          {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -116,7 +117,7 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="flex flex-1 flex-col justify-center gap-1 px-6 pb-24"
           aria-label="Navigation mobile"
         >
-          {NAV.filter((item) => item.public || user).map((item, i) => (
+          {NAV.map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
@@ -134,9 +135,7 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           ))}
           <div
             style={{
-              transitionDelay: open
-                ? `${100 + NAV.filter((item) => item.public || user).length * 70}ms`
-                : "0ms",
+              transitionDelay: open ? `${100 + NAV.length * 70}ms` : "0ms",
             }}
             className={`pt-7 transition-[opacity,transform] duration-300 ease-out ${
               open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"

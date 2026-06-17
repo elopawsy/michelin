@@ -19,6 +19,7 @@ model User {
   espDevices           EspDevice[]
   preferences          UserPreference[]
   wheelRecommendations WheelRecommendation[]
+  gameScore            GameScore?
 
   @@map("user")
 }
@@ -247,4 +248,22 @@ model WheelRecommendation {
   @@index([userId])
   @@index([wheelId])
   @@map("wheel_recommendation")
+}
+
+// Meilleur score du mini-jeu « La Côte » par utilisateur (une ligne par
+// joueur, mise à jour si le nouveau score dépasse l'ancien) — alimente le
+// classement (leaderboard) des personnes connectées.
+model GameScore {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique @map("user_id")
+  bestScore    Int      @map("best_score")
+  bestDistance Int      @map("best_distance")
+  tireId       String   @map("tire_id")
+  runs         Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bestScore])
+  @@map("game_score")
 }

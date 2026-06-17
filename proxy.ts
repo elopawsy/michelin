@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthSessionFromRequest } from "@/lib/auth";
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
+// Pages accessibles sans authentification. Le jeu « La Côte » est ouvert aux
+// invités : ils jouent librement et un CTA les invite à créer un compte pour
+// enregistrer leur score au classement.
+const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/jeu"]);
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
 /* Préfixes publics : accessibles sans authentification (contenu SEO/organique).

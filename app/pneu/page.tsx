@@ -1,68 +1,20 @@
-import Link from "next/link";
-import {
-  getCurrentAuthSession,
-  getCurrentUserSummary,
-} from "@/lib/current-session";
+import { getCurrentAuthSession } from "@/lib/current-session";
 import { loadDashboard } from "@/lib/dashboard";
-import { HeaderUserBadge } from "../_components/HeaderUserBadge";
-import { Wordmark } from "../_components/ui";
+import { MichelinHeader } from "../_components/MichelinHeader";
 import {
   PneuClient,
   type PneuRecommendationSummary,
 } from "./PneuClient";
 
 export default async function PneuPage() {
-  const [session, user] = await Promise.all([
-    getCurrentAuthSession(),
-    getCurrentUserSummary(),
-  ]);
+  const session = await getCurrentAuthSession();
   const recommendation = session
     ? await loadLatestRecommendation(session).catch(() => null)
     : null;
 
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">
-      <header className="sticky top-0 z-40 border-b border-bordure bg-carte/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 py-4 lg:px-10">
-          <Link href="/" aria-label="Michelin Ride — accueil">
-            <Wordmark />
-          </Link>
-          <nav className="flex items-center gap-7" aria-label="Navigation">
-            <Link
-              href="/"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              Accueil
-            </Link>
-            <Link
-              href="/#gamme"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              La gamme
-            </Link>
-            {user && (
-              <Link
-                href="/recommandations"
-                className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
-              >
-                Recommandations
-              </Link>
-            )}
-            {user ? (
-              <div className="flex items-center gap-3">
-                <HeaderUserBadge user={user} variant="app" />
-              </div>
-            ) : (
-              <Link
-                href="/login"
-                className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
-              >
-                Connexion
-              </Link>
-            )}
-          </nav>
-        </div>
-      </header>
+      <MichelinHeader />
 
       <PneuClient recommendation={recommendation} />
     </div>

@@ -28,6 +28,13 @@ describe("proxy auth gate", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
+  it("allows the game page without a session (guests can play)", () => {
+    const response = proxy(makeRequest("/jeu"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
   it("redirects private pages to login without a session", () => {
     const response = proxy(makeRequest("/pneu?tab=capteur"));
 

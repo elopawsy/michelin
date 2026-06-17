@@ -1,10 +1,13 @@
 "use client";
 
-import { Badge, Button, Picto } from "../ui";
+import Link from "next/link";
+import { Badge, Button, ButtonLink, Picto } from "../ui";
 import type { RunResult } from "./engine/types";
 
 interface GameOverProps {
   result: RunResult;
+  isLoggedIn: boolean;
+  rank?: number | null;
   onRetry: () => void;
   onGarage: () => void;
   onMenu: () => void;
@@ -32,7 +35,14 @@ function Stat({
   );
 }
 
-export function GameOver({ result, onRetry, onGarage, onMenu }: GameOverProps) {
+export function GameOver({
+  result,
+  isLoggedIn,
+  rank,
+  onRetry,
+  onGarage,
+  onMenu,
+}: GameOverProps) {
   const title =
     result.reason === "crash" ? "Chute !" : "Plus d'énergie !";
   return (
@@ -83,6 +93,41 @@ export function GameOver({ result, onRetry, onGarage, onMenu }: GameOverProps) {
           </span>
           <span className="text-sm text-white/70">ajoutés au porte-monnaie</span>
         </div>
+
+        {isLoggedIn && rank != null && (
+          <div className="flex items-center gap-2 rounded-card-sm bg-bleu-leger px-5 py-2.5 text-bleu-fonce">
+            <Picto name="speed-rating" className="h-5 w-5 text-bleu" />
+            <span className="text-sm font-bold">
+              {rank === 1
+                ? "Vous êtes en tête du classement !"
+                : `Vous êtes ${rank}ᵉ au classement`}
+            </span>
+          </div>
+        )}
+
+        {!isLoggedIn && (
+          <div className="w-full rounded-card-sm border border-bleu/15 bg-bleu-leger p-5 text-center">
+            <p className="text-sm font-extrabold text-bleu-fonce">
+              Enregistrez votre score&nbsp;!
+            </p>
+            <p className="mt-1 text-[13px] leading-relaxed text-encre-2">
+              Créez un compte pour sauvegarder vos{" "}
+              <strong className="font-bold text-bleu-fonce">
+                {result.score.toLocaleString("fr-FR")} pts
+              </strong>{" "}
+              et entrer au classement.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              <ButtonLink href="/register?next=/jeu">Créer un compte</ButtonLink>
+              <Link
+                href="/login?next=/jeu"
+                className="text-sm font-bold text-bleu underline-offset-2 hover:underline"
+              >
+                J&rsquo;ai déjà un compte
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button autoFocus onClick={onRetry}>
