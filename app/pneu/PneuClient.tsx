@@ -495,7 +495,7 @@ function normalizeSavedReading(
     rearPressureBar,
     rearWearPercent,
     recordedAt:
-      typeof record.recordedAt === "string"
+      typeof record.recordedAt === "string" && !Number.isNaN(Date.parse(record.recordedAt))
         ? record.recordedAt
         : fallbackRecordedAt,
     speedKmh: readRecordNumber(record.speedKmh) ?? fallbackTrame.v,
