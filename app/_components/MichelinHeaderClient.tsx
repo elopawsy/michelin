@@ -8,7 +8,10 @@ import {
 } from "./HeaderUserBadge";
 import { Wordmark } from "./ui";
 
+/* `public: true` → lien visible par tous (contenu accessible sans connexion).
+   Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
 const NAV = [
+  { href: "/blog", label: "Le Mag", public: true },
   { href: "/jeu", label: "Le jeu" },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
@@ -46,16 +49,15 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="hidden items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10 md:flex"
           aria-label="Navigation principale"
         >
-          {user &&
-            NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition-colors hover:text-bleu"
-              >
-                {item.label}
-              </Link>
-            ))}
+          {NAV.filter((item) => item.public || user).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors hover:text-bleu"
+            >
+              {item.label}
+            </Link>
+          ))}
           {user ? (
             <div className="flex items-center gap-3">
               <HeaderUserBadge user={user} />
@@ -114,29 +116,26 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           className="flex flex-1 flex-col justify-center gap-1 px-6 pb-24"
           aria-label="Navigation mobile"
         >
-          {user &&
-            NAV.map((item, i) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                tabIndex={open ? 0 : -1}
-                style={{
-                  transitionDelay: open ? `${100 + i * 70}ms` : "0ms",
-                }}
-                className={`border-b border-bleu-fonce/10 py-5 text-2xl font-extrabold text-bleu-fonce transition-[opacity,transform] duration-300 ease-out ${
-                  open
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-3 opacity-0"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {NAV.filter((item) => item.public || user).map((item, i) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              tabIndex={open ? 0 : -1}
+              style={{
+                transitionDelay: open ? `${100 + i * 70}ms` : "0ms",
+              }}
+              className={`border-b border-bleu-fonce/10 py-5 text-2xl font-extrabold text-bleu-fonce transition-[opacity,transform] duration-300 ease-out ${
+                open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
           <div
             style={{
               transitionDelay: open
-                ? `${100 + (user ? NAV.length : 0) * 70}ms`
+                ? `${100 + NAV.filter((item) => item.public || user).length * 70}ms`
                 : "0ms",
             }}
             className={`pt-7 transition-[opacity,transform] duration-300 ease-out ${
