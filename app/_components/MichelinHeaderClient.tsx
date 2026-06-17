@@ -8,10 +8,14 @@ import {
 } from "./HeaderUserBadge";
 import { Wordmark } from "./ui";
 
+/* `public: true` → lien visible par tous (contenu accessible sans connexion).
+   Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
 const NAV = [
+  { href: "/blog", label: "Le Mag", public: true },
   { href: "/jeu", label: "Le jeu" },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
+  { href: "/recommandations", label: "Recommandations" },
 ];
 
 type MichelinHeaderClientProps = {
@@ -56,7 +60,9 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
             </Link>
           ))}
           {user ? (
-            <HeaderUserBadge user={user} />
+            <div className="flex items-center gap-3">
+              <HeaderUserBadge user={user} />
+            </div>
           ) : (
             <Link href="/login" className="transition-colors hover:text-bleu">
               Connexion
@@ -136,7 +142,9 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
             }`}
           >
             {user ? (
-              <HeaderUserBadge user={user} />
+              <div className="flex flex-col items-start gap-4">
+                <HeaderUserBadge user={user} />
+              </div>
             ) : (
               <Link
                 href="/login"
