@@ -9,11 +9,16 @@ export const metadata: Metadata = {
   description: "Création d'un compte Michelin Ride.",
 };
 
-export default async function RegisterPage() {
+type AuthPageProps = {
+  searchParams: Promise<{ next?: string | string[] }>;
+};
+
+export default async function RegisterPage({ searchParams }: AuthPageProps) {
   const session = await getCurrentAuthSession();
+  const redirectTo = getSafeRedirect((await searchParams).next);
 
   if (session) {
-    redirect("/pneu");
+    redirect(redirectTo);
   }
 
   return (
@@ -22,7 +27,13 @@ export default async function RegisterPage() {
       title="Inscription"
       description="Créez votre accès pour connecter vos vélos et suivre les données de vos pneus."
     >
-      <AuthForm mode="register" />
+      <AuthForm mode="register" redirectTo={redirectTo} />
     </AuthShell>
   );
+}
+
+function getSafeRedirect(value: string | string[] | undefined) {
+  const next = Array.isArray(value) ? value[0] : value;
+
+  return next?.startsWith("/") && !next.startsWith("//") ? next : "/pneu";
 }

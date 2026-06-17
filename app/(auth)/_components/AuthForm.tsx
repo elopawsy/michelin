@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { ArrowRight, Button } from "@/app/_components/ui";
 
@@ -9,6 +9,7 @@ type AuthMode = "login" | "register";
 
 type AuthFormProps = {
   mode: AuthMode;
+  redirectTo?: string;
 };
 
 const inputClass =
@@ -16,9 +17,8 @@ const inputClass =
 
 const labelClass = "text-sm font-bold text-bleu-fonce";
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, redirectTo = "/pneu" }: AuthFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +58,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.replace(getSafeRedirectPath(searchParams.get("next")));
+      router.replace(redirectTo);
       router.refresh();
     } catch {
       setError("Connexion impossible. Réessayez dans un instant.");
@@ -146,7 +146,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <p className="text-center text-sm font-medium text-encre-2">
         {isRegister ? "Déjà inscrit ?" : "Pas encore de compte ?"}{" "}
         <Link
-          href={isRegister ? "/login" : "/register"}
+          href={getAuthSwitchHref(isRegister ? "/login" : "/register", redirectTo)}
           className="font-bold text-bleu-fonce transition-colors hover:text-bleu"
         >
           {isRegister ? "Se connecter" : "Créer un compte"}
@@ -154,14 +154,6 @@ export function AuthForm({ mode }: AuthFormProps) {
       </p>
     </form>
   );
-}
-
-function getSafeRedirectPath(value: string | null) {
-  if (!value || !/^\/(?!\/|\\)/.test(value)) {
-    return "/pneu";
-  }
-
-  return value;
 }
 
 function Field({
@@ -247,6 +239,12 @@ function readFormString(formData: FormData, key: string) {
   const value = formData.get(key);
 
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getAuthSwitchHref(path: "/login" | "/register", redirectTo: string) {
+  return redirectTo === "/pneu"
+    ? path
+    : `${path}?next=${encodeURIComponent(redirectTo)}`;
 }
 
 function formatAuthError(message?: string) {

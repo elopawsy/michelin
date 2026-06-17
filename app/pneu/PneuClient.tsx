@@ -19,7 +19,21 @@ interface Mesure extends Trame {
   recuLe: string;
 }
 
-export function PneuClient() {
+export type PneuRecommendationSummary = {
+  description: string | null;
+  model: string;
+  reason: string;
+  score: number;
+  tubelessReady: boolean;
+  wheelSize: string;
+  wheelTypeTitle: string;
+};
+
+export function PneuClient({
+  recommendation = null,
+}: {
+  recommendation?: PneuRecommendationSummary | null;
+}) {
   // État initial dérivé de la connexion ouverte à l'étape capteur de
   // l'onboarding : elle survit au router.push (même contexte JS). Si on arrive
   // ici sans être passé par l'onboarding, on reste « inactif » et le bouton
@@ -186,7 +200,7 @@ export function PneuClient() {
         </p>
       )}
 
-      <RecoPub mesure={mesure} />
+      <RecoPub mesure={mesure} recommendation={recommendation} />
     </main>
   );
 }
@@ -232,15 +246,26 @@ function Carte({
 
 // Recommandation pneu en mode pub (DA §11). L'accroche s'adapte au pneu le plus
 // usé quand des mesures sont disponibles, sinon message générique.
-function RecoPub({ mesure }: { mesure: Mesure | null }) {
+function RecoPub({
+  mesure,
+  recommendation,
+}: {
+  mesure: Mesure | null;
+  recommendation: PneuRecommendationSummary | null;
+}) {
   const usureMax = mesure ? Math.max(mesure.wf, mesure.wr) : null;
   const pneuUse = mesure && mesure.wf >= mesure.wr ? "avant" : "arrière";
   const accroche =
-    usureMax === null
+    recommendation?.reason ??
+    (usureMax === null
       ? "Le pneu pensé pour votre profil, prêt à mordre sur tous les terrains."
       : usureMax >= 40
         ? `Votre pneu ${pneuUse} est usé à ${usureMax.toFixed(0)} %. C'est le moment de penser au remplacement.`
-        : "Gardez le meilleur grip, kilomètre après kilomètre, avec le pneu fait pour vous.";
+        : "Gardez le meilleur grip, kilomètre après kilomètre, avec le pneu fait pour vous.");
+  const title = recommendation?.model ?? "Ride Gravel 700 × 42";
+  const metadata = recommendation
+    ? `${recommendation.wheelTypeTitle} · ${recommendation.wheelSize} · score ${recommendation.score.toFixed(1)}/100`
+    : "Tubeless · gomme tendre · carcasse souple";
 
   return (
     <section
@@ -255,12 +280,10 @@ function RecoPub({ mesure }: { mesure: Mesure | null }) {
         <Badge variant="premium">Recommandé pour vous</Badge>
         <p className="mt-4 text-sm font-semibold text-jaune">Michelin Ride</p>
         <h2 className="mt-1 text-[clamp(1.5rem,3vw,2rem)] leading-[1.1] font-extrabold tracking-[-0.01em] text-white italic">
-          Ride Gravel 700 × 42
+          {title}
         </h2>
         <p className="mt-3 text-sm leading-[1.6] text-white/70">{accroche}</p>
-        <p className="mt-1 text-sm text-white/50">
-          Tubeless · gomme tendre · carcasse souple
-        </p>
+        <p className="mt-1 text-sm text-white/50">{metadata}</p>
         <ButtonLink
           href="https://www.michelin.fr/bicycle"
           variant="primary"
