@@ -198,3 +198,133 @@ console.log(`Modèles (gammes) : ${catalogue.length}`);
 const byCat = {};
 for (const m of catalogue) byCat[m.category] = (byCat[m.category] || 0) + 1;
 console.log("Par catégorie :", byCat);
+
+/* ──────────────────────────────────────────────────────────────
+   Génération du seed roues (lib/wheels.generated.ts) — barème validé :
+   scores dérivés du segment, de la catégorie, de la largeur et des
+   technologies de renfort ; prix estimés par segment (placeholder).
+─────────────────────────────────────────────────────────────── */
+const SEG_RANK = {
+  "PREMIUM RACING LINE": 4,
+  "PREMIUM COMPETITION LINE": 3,
+  "PREMIUM PERFORMANCE LINE": 2,
+  "ACCESS LINE": 1,
+};
+const SEG_PRICE = { 4: "64.90", 3: "54.90", 2: "39.90", 1: "27.90" };
+const clampS = (n) => Math.max(1, Math.min(10, Math.round(n)));
+
+function widthMmOf(v) {
+  if (v.widthMm) return v.widthMm;
+  const i = parseFloat(v.widthIn);
+  return Number.isFinite(i) && i > 0 ? Math.round(i * 25.4) : null;
+}
+
+function wheelTypeFor(category, variants) {
+  if (category === "VTT") {
+    const counts = {};
+    for (const v of variants)
+      if (v.diameterIn) counts[v.diameterIn] = (counts[v.diameterIn] || 0) + 1;
+    const top =
+      Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "29";
+    if (top.startsWith("27")) return "Trail 27.5";
+    if (top.startsWith("26")) return "Trail 26";
+    return "Trail 29";
+  }
+  if (category === "Gravel") {
+    const has622 = variants.some((v) => v.diameterMm === 622);
+    const has584 = variants.some((v) => v.diameterMm === 584);
+    return !has622 && has584 ? "Gravel 650B" : "Gravel 700c";
+  }
+  if (category === "Route") return "Road 700c";
+  if (category === "Ville & rando") return "City 700c";
+  return null;
+}
+
+const BIKETYPE = {
+  Route: ["Road"],
+  Gravel: ["Gravel"],
+  "Ville & rando": ["City"],
+  VTT: ["Mountain"],
+};
+const SURFACE = {
+  Route: ["Road"],
+  Gravel: ["Road", "Gravel", "Rough"],
+  "Ville & rando": ["City", "Road"],
+  VTT: ["Gravel", "Rough"],
+};
+const SPEED_BASE = { Route: 9, Gravel: 6, "Ville & rando": 5, VTT: 4 };
+const RR_BASE = { Route: 9, Gravel: 7, "Ville & rando": 6, VTT: 4 };
+const COMFORT_BASE = { Route: 6, Gravel: 8, "Ville & rando": 8, VTT: 9 };
+const DURA_BASE = { Route: 6, Gravel: 7, "Ville & rando": 9, VTT: 8 };
+
+const wheelsGen = [];
+const usedTypes = new Set();
+
+for (const m of catalogue) {
+  if (m.category === "Enfant" || m.category === "Autre") continue;
+  const wtTitle = wheelTypeFor(m.category, m.variants);
+  if (!wtTitle) continue;
+  const widths = m.variants.map(widthMmOf).filter((n) => n);
+  if (widths.length === 0) continue;
+  usedTypes.add(wtTitle);
+
+  const minW = Math.min(...widths);
+  const maxW = Math.max(...widths);
+  const weights = m.variants.map((v) => v.weightG).filter((n) => n);
+  const weightG = weights.length
+    ? Math.round(weights.reduce((a, b) => a + b, 0) / weights.length)
+    : 400;
+  const rank = SEG_RANK[m.segment] ?? 2;
+  const narrow = minW < 32;
+  const wide = maxW > 45;
+  const reinforced = m.technologies.some((t) => /SHIELD|PROTECTION/i.test(t));
+  const uses = m.uses.map((u) => u.toUpperCase());
+
+  const speed = clampS(SPEED_BASE[m.category] + (rank - 2) + (narrow ? 1 : 0) - (wide ? 1 : 0));
+  const rolling = clampS(RR_BASE[m.category] + (rank - 2) + (narrow ? 1 : 0) - (wide ? 1 : 0));
+  const comfort = clampS(COMFORT_BASE[m.category] + (m.tubeless ? 1 : 0) + (wide ? 1 : 0));
+  const durability = clampS(
+    DURA_BASE[m.category] + (reinforced ? 2 : 0) + (rank === 1 ? 1 : 0) - (rank === 4 ? 1 : 0),
+  );
+
+  const bts = [...BIKETYPE[m.category]];
+  if (m.category === "Route" && uses.some((u) => /ENDURANCE|ALL ROAD|TOURING/.test(u)))
+    bts.push("City");
+  if (m.ebike) bts.push("E-Bike");
+
+  wheelsGen.push({
+    wheelTypeTitle: wtTitle,
+    model: m.name.replace(/^MICHELIN /, ""),
+    description: `${m.category} — ${m.segment.replace("PREMIUM ", "").toLowerCase()}${m.tubeless ? ", tubeless ready" : ""}.`,
+    durabilityKm: 3000 + durability * 600,
+    minTireWidthMm: minW,
+    maxTireWidthMm: maxW,
+    weightG,
+    price: SEG_PRICE[rank],
+    tubelessReady: m.tubeless,
+    brakeType: "disc",
+    rollingResistanceScore: rolling,
+    comfortScore: comfort,
+    speedScore: speed,
+    durabilityScore: durability,
+    bicycleTypes: [...new Set(bts)],
+    surfaces: SURFACE[m.category],
+    goalScores: { Speed: speed, Comfort: comfort, Durability: durability },
+  });
+}
+
+const EXTRA_TYPES = [
+  { title: "Gravel 650B", wheelSize: "650b", description: "Format 650B pour le gravel et l'aventure." },
+  { title: "Trail 27.5", wheelSize: "27.5", description: "Format VTT 27,5 pouces." },
+  { title: "Trail 26", wheelSize: "26", description: "Format VTT 26 pouces." },
+].filter((t) => usedTypes.has(t.title));
+
+writeFileSync(
+  "lib/wheels.generated.ts",
+  banner +
+    `import type { SeedWheel, SeedWheelType } from "./seed-types";\n\n` +
+    `export const GENERATED_WHEEL_TYPES: SeedWheelType[] = ${JSON.stringify(EXTRA_TYPES, null, 2)};\n\n` +
+    `export const GENERATED_WHEELS: SeedWheel[] = ${JSON.stringify(wheelsGen, null, 2)};\n`,
+);
+
+console.log(`Roues générées : ${wheelsGen.length} | types ajoutés : ${EXTRA_TYPES.map((t) => t.title).join(", ") || "aucun"}`);

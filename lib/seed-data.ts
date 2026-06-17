@@ -1,6 +1,10 @@
 import { scrypt } from "node:crypto";
 import { promisify } from "node:util";
 import type { PrismaClient } from "../generated/prisma/client";
+import {
+  GENERATED_WHEELS,
+  GENERATED_WHEEL_TYPES,
+} from "./wheels.generated";
 
 const scryptAsync = promisify(scrypt);
 const keyLength = 64;
@@ -112,6 +116,7 @@ const wheelTypes = [
     wheelSize: "700c",
     description: "Reinforced 700c format for electric-assist bicycles.",
   },
+  ...GENERATED_WHEEL_TYPES,
 ];
 
 const bicycleBrands = [
@@ -232,198 +237,7 @@ const bicycleModels = [
   },
 ];
 
-const wheels = [
-  {
-    wheelTypeTitle: "Road 700c",
-    model: "Michelin Road Performance",
-    description: "Fast 700c road tire for paved routes.",
-    durabilityKm: 4500,
-    minTireWidthMm: 25,
-    maxTireWidthMm: 32,
-    weightG: 260,
-    price: "59.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 9,
-    comfortScore: 6,
-    speedScore: 10,
-    durabilityScore: 6,
-    bicycleTypes: ["Road"],
-    surfaces: ["Road"],
-    goalScores: { Speed: 10, Comfort: 6, Durability: 6 },
-  },
-  {
-    wheelTypeTitle: "Road 700c",
-    model: "Michelin Endurance Comfort",
-    description: "Balanced 700c tire for long paved rides.",
-    durabilityKm: 6000,
-    minTireWidthMm: 28,
-    maxTireWidthMm: 35,
-    weightG: 310,
-    price: "54.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 8,
-    comfortScore: 8,
-    speedScore: 8,
-    durabilityScore: 8,
-    bicycleTypes: ["Road", "City"],
-    surfaces: ["Road", "City"],
-    goalScores: { Speed: 8, Comfort: 9, Durability: 8 },
-  },
-  {
-    wheelTypeTitle: "Road 700c",
-    model: "Michelin Power Cup Urban",
-    description: "Responsive 700c tire for fast commuters and fitness bikes.",
-    durabilityKm: 5200,
-    minTireWidthMm: 30,
-    maxTireWidthMm: 38,
-    weightG: 355,
-    price: "49.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 8,
-    comfortScore: 7,
-    speedScore: 9,
-    durabilityScore: 7,
-    bicycleTypes: ["Road", "City"],
-    surfaces: ["City", "Road"],
-    goalScores: { Speed: 9, Comfort: 7, Durability: 7 },
-  },
-  {
-    wheelTypeTitle: "Gravel 700c",
-    model: "Michelin Gravel Mixed",
-    description: "700c tire for mixed tarmac and gravel routes.",
-    durabilityKm: 5500,
-    minTireWidthMm: 35,
-    maxTireWidthMm: 50,
-    weightG: 440,
-    price: "64.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 7,
-    comfortScore: 8,
-    speedScore: 7,
-    durabilityScore: 8,
-    bicycleTypes: ["Gravel"],
-    surfaces: ["Road", "Gravel", "Rough"],
-    goalScores: { Speed: 7, Comfort: 8, Durability: 8 },
-  },
-  {
-    wheelTypeTitle: "Gravel 700c",
-    model: "Michelin Gravel Adventure",
-    description: "High-volume gravel tire for rough routes and bikepacking.",
-    durabilityKm: 6200,
-    minTireWidthMm: 40,
-    maxTireWidthMm: 55,
-    weightG: 520,
-    price: "69.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 6,
-    comfortScore: 9,
-    speedScore: 6,
-    durabilityScore: 9,
-    bicycleTypes: ["Gravel"],
-    surfaces: ["Gravel", "Rough"],
-    goalScores: { Speed: 6, Comfort: 9, Durability: 9 },
-  },
-  {
-    wheelTypeTitle: "City 700c",
-    model: "Michelin City Durable",
-    description: "Durable city tire for commuting and daily use.",
-    durabilityKm: 8000,
-    minTireWidthMm: 32,
-    maxTireWidthMm: 45,
-    weightG: 520,
-    price: "39.90",
-    tubelessReady: false,
-    brakeType: "any",
-    rollingResistanceScore: 6,
-    comfortScore: 8,
-    speedScore: 6,
-    durabilityScore: 10,
-    bicycleTypes: ["City"],
-    surfaces: ["City", "Road", "Rough"],
-    goalScores: { Speed: 5, Comfort: 8, Durability: 10 },
-  },
-  {
-    wheelTypeTitle: "City 700c",
-    model: "Michelin City Protek Max",
-    description: "Puncture-resistant city tire for rough urban pavement.",
-    durabilityKm: 9000,
-    minTireWidthMm: 35,
-    maxTireWidthMm: 47,
-    weightG: 610,
-    price: "44.90",
-    tubelessReady: false,
-    brakeType: "any",
-    rollingResistanceScore: 5,
-    comfortScore: 9,
-    speedScore: 5,
-    durabilityScore: 10,
-    bicycleTypes: ["City", "E-Bike"],
-    surfaces: ["City", "Rough"],
-    goalScores: { Speed: 5, Comfort: 9, Durability: 10 },
-  },
-  {
-    wheelTypeTitle: "Trail 29",
-    model: "Michelin Trail Control",
-    description: "29 inch tire for rough off-road routes.",
-    durabilityKm: 4500,
-    minTireWidthMm: 55,
-    maxTireWidthMm: 66,
-    weightG: 850,
-    price: "69.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 5,
-    comfortScore: 9,
-    speedScore: 5,
-    durabilityScore: 9,
-    bicycleTypes: ["Mountain"],
-    surfaces: ["Gravel", "Rough"],
-    goalScores: { Speed: 5, Comfort: 9, Durability: 9 },
-  },
-  {
-    wheelTypeTitle: "Trail 29",
-    model: "Michelin Wild Trail Grip",
-    description: "Aggressive 29 inch trail tire with reinforced casing.",
-    durabilityKm: 4200,
-    minTireWidthMm: 58,
-    maxTireWidthMm: 70,
-    weightG: 930,
-    price: "74.90",
-    tubelessReady: true,
-    brakeType: "disc",
-    rollingResistanceScore: 4,
-    comfortScore: 10,
-    speedScore: 4,
-    durabilityScore: 9,
-    bicycleTypes: ["Mountain"],
-    surfaces: ["Rough"],
-    goalScores: { Speed: 4, Comfort: 10, Durability: 9 },
-  },
-  {
-    wheelTypeTitle: "E-Bike 700c",
-    model: "Michelin E-City Shield",
-    description: "Reinforced 700c tire for electric city bikes.",
-    durabilityKm: 8500,
-    minTireWidthMm: 38,
-    maxTireWidthMm: 55,
-    weightG: 690,
-    price: "52.90",
-    tubelessReady: false,
-    brakeType: "disc",
-    rollingResistanceScore: 6,
-    comfortScore: 8,
-    speedScore: 6,
-    durabilityScore: 10,
-    bicycleTypes: ["E-Bike", "City"],
-    surfaces: ["City", "Road", "Rough"],
-    goalScores: { Speed: 6, Comfort: 8, Durability: 10 },
-  },
-];
+const wheels = GENERATED_WHEELS;
 
 const demoPreferences = [
   {
@@ -855,23 +669,25 @@ async function seedDemoUser(prisma: PrismaClient, indexes: SeedIndexes) {
     createdBicycles.push(userBicycle);
   }
 
-  await prisma.wheelRecommendation.createMany({
-    data: demoRecommendations.map((recommendation) => ({
-      userId: user.id,
-      userBicycleId: requireFromMap(
-        indexBy(createdBicycles, (item) => item.name),
-        recommendation.bikeName,
-        "demo bicycle",
-      ).id,
-      wheelId: requireFromMap(
-        indexes.wheels,
-        recommendation.wheelModel,
-        "wheel",
-      ).id,
-      score: recommendation.score,
-      reason: recommendation.reason,
-    })),
-  });
+  // Le catalogue réel ayant remplacé les roues fictives, on ne crée que les
+  // recommandations de démo dont la roue référencée existe encore.
+  const bicycleByName = indexBy(createdBicycles, (item) => item.name);
+  const demoRecData = demoRecommendations
+    .map((recommendation) => {
+      const bicycle = bicycleByName.get(recommendation.bikeName);
+      const wheel = indexes.wheels.get(recommendation.wheelModel);
+      if (!bicycle || !wheel) return null;
+      return {
+        userId: user.id,
+        userBicycleId: bicycle.id,
+        wheelId: wheel.id,
+        score: recommendation.score,
+        reason: recommendation.reason,
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
+
+  await prisma.wheelRecommendation.createMany({ data: demoRecData });
 
   const [
     bicycleCount,
