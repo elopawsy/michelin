@@ -14,6 +14,9 @@ export function MichelinHeader() {
           className="flex items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10"
           aria-label="Navigation principale"
         >
+          <Link href="/jeu" className="transition-colors hover:text-bleu">
+            Le jeu
+          </Link>
           <a href="#a-propos" className="transition-colors hover:text-bleu">
             À propos
           </a>
