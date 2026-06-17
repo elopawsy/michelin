@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { HeaderUserBadge } from "@/app/_components/HeaderUserBadge";
 import { Badge, ButtonLink, Picto, Wordmark } from "@/app/_components/ui";
 import {
@@ -16,14 +15,16 @@ export default async function RecommandationsPage() {
     getCurrentUserSummary(),
   ]);
 
-  if (!session) {
-    redirect("/login?next=/recommandations");
-  }
+  // Temporary public-access mode: do not redirect anonymous visitors.
+  // if (!session) {
+  //   redirect("/login?next=/recommandations");
+  // }
 
-  const dashboard = await loadDashboard(session);
-  const latestBicycle = dashboard.bicycles[0] ?? null;
-  const latestPreference = dashboard.preferences[0] ?? null;
-  const recommendations = dashboard.recommendations.map(toRecommendationCardData);
+  const dashboard = session ? await loadDashboard(session) : null;
+  const latestBicycle = dashboard?.bicycles[0] ?? null;
+  const latestPreference = dashboard?.preferences[0] ?? null;
+  const recommendations =
+    dashboard?.recommendations.map(toRecommendationCardData) ?? [];
 
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">

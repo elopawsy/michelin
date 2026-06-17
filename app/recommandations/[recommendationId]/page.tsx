@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { HeaderUserBadge } from "@/app/_components/HeaderUserBadge";
 import {
   ArrowLeft,
@@ -36,9 +36,10 @@ export default async function RecommendationDetailPage({
     getCurrentUserSummary(),
   ]);
 
-  if (!session) {
-    redirect(`/login?next=/recommandations/${recommendationId}`);
-  }
+  // Temporary public-access mode: do not redirect anonymous visitors.
+  // if (!session) {
+  //   redirect(`/login?next=/recommandations/${recommendationId}`);
+  // }
 
   const recommendation = await prisma.wheelRecommendation.findFirst({
     include: {
@@ -50,7 +51,7 @@ export default async function RecommendationDetailPage({
     },
     where: {
       id: recommendationIdNumber,
-      userId: session.userId,
+      ...(session ? { userId: session.userId } : {}),
     },
   });
 
