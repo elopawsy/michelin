@@ -157,7 +157,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 }
 
 function getSafeRedirectPath(value: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+  if (!value || !/^\/(?!\/|\\)/.test(value)) {
     return "/pneu";
   }
 
