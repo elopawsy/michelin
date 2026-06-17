@@ -57,8 +57,7 @@ export default function Heritage() {
                   src={card.img}
                   alt={card.alt}
                   fill
-                  fetchPriority="high"
-                  loading="eager"
+                  priority
                   unoptimized
                   sizes="(max-width: 640px) 82vw, (max-width: 1024px) 46vw, 420px"
                   className="object-cover"
