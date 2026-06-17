@@ -84,7 +84,7 @@ export default async function RecommandationsPage() {
                         <SummaryItem label="Vélo" value={latestBicycle.name} />
                         <SummaryItem
                           label="Type"
-                          value={latestBicycle.bicycleModel.bicycleType.title}
+                          value={latestBicycle.bicycleModel?.bicycleType?.title ?? ""}
                         />
                         <SummaryItem
                           label="Roues"
