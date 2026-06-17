@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAuthSessionFromRequest } from "@/lib/auth";
 
-const PUBLIC_PATHS = new Set(["/", "/login", "/register"]);
+// `/revendeurs` est public : un localisateur de boutiques doit rester
+// accessible (et indexable) sans authentification.
+const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/revendeurs"]);
 const AUTH_PATHS = new Set(["/login", "/register"]);
 
 export function proxy(request: NextRequest) {
