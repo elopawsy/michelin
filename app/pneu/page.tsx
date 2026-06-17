@@ -30,7 +30,7 @@ export default async function PneuPage() {
           <nav className="flex items-center gap-7" aria-label="Navigation">
             <Link
               href="/"
-              className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
+              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
             >
               Accueil
             </Link>
@@ -40,8 +40,18 @@ export default async function PneuPage() {
             >
               La gamme
             </Link>
+            {user && (
+              <Link
+                href="/recommandations"
+                className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
+              >
+                Recommandations
+              </Link>
+            )}
             {user ? (
-              <HeaderUserBadge user={user} variant="app" />
+              <div className="flex items-center gap-3">
+                <HeaderUserBadge user={user} variant="app" />
+              </div>
             ) : (
               <Link
                 href="/login"

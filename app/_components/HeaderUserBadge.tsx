@@ -23,8 +23,8 @@ export function HeaderUserBadge({
 }: HeaderUserBadgeProps) {
   return (
     <Link
-      href="/recommandations"
-      aria-label={`Voir les recommandations de ${user.displayName}`}
+      href="/profil"
+      aria-label={`Voir le profil de ${user.displayName}`}
       className={`inline-flex min-w-0 items-center gap-2 rounded-pill transition-colors hover:text-bleu focus-visible:outline-bleu ${variantClasses[variant]}`}
       title={user.email}
     >
@@ -34,7 +34,7 @@ export function HeaderUserBadge({
       >
         {user.initials}
       </span>
-      <span className="max-w-[11rem] truncate text-sm font-bold">
+      <span className="hidden max-w-[11rem] truncate text-sm font-bold sm:block">
         {user.displayName}
       </span>
     </Link>
