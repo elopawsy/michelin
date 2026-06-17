@@ -353,10 +353,18 @@ function formatAxisValue(value: number, unit: string) {
 }
 
 function formatChartDate(value: string) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  }).format(new Date(value));
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  try {
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      month: "2-digit",
+    }).format(date);
+  } catch {
+    return "";
+  }
 }
