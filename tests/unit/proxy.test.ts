@@ -3,7 +3,7 @@ import { AUTH_COOKIE, createAuthToken } from "@/lib/auth";
 import { proxy } from "@/proxy";
 import { makeRequest } from "../helpers/request";
 
-describe("proxy auth gate", () => {
+describe("proxy temporary public-access mode", () => {
   beforeEach(() => {
     vi.stubEnv("JWT_SECRET", "proxy-test-secret");
     vi.useFakeTimers();
@@ -21,13 +21,11 @@ describe("proxy auth gate", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
-  it("redirects private pages to login without a session", () => {
+  it("allows private pages without a session", () => {
     const response = proxy(makeRequest("/pneu?tab=capteur"));
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe(
-      "http://localhost/login?next=%2Fpneu%3Ftab%3Dcapteur",
-    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
   });
 
   it("allows private pages with a valid auth cookie", () => {
@@ -41,7 +39,7 @@ describe("proxy auth gate", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
-  it("redirects auth pages away for authenticated users", () => {
+  it("allows auth pages for authenticated users", () => {
     const token = createAuthToken({ email: "rider@example.com", userId: 1 });
     const response = proxy(
       makeRequest("/login", {
@@ -49,7 +47,7 @@ describe("proxy auth gate", () => {
       }),
     );
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://localhost/pneu");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
   });
 });
