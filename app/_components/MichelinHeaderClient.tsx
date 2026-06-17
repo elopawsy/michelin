@@ -12,8 +12,14 @@ import { Wordmark } from "./ui";
 const NAV = [
   { href: "/catalogue", label: "Catalogue", public: true },
   { href: "/revendeurs", label: "Revendeurs", public: true },
+/* `public: true` → lien visible par tous (contenu accessible sans connexion).
+   Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
+const NAV = [
+  { href: "/blog", label: "Le Mag", public: true },
+  { href: "/jeu", label: "Le jeu" },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
+  { href: "/recommandations", label: "Recommandations" },
 ];
 
 type MichelinHeaderClientProps = {
@@ -42,7 +48,8 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
           <Wordmark className="h-9 sm:h-11" />
         </Link>
 
-        {/* Navigation desktop */}
+        {/* Navigation desktop — liens identiques sur toutes les pages, quel
+            que soit l'état de connexion (cohérence inter-pages). */}
         <nav
           className="hidden items-center gap-7 text-[15px] font-semibold text-bleu-fonce sm:gap-10 md:flex"
           aria-label="Navigation principale"
@@ -57,7 +64,9 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
             </Link>
           ))}
           {user ? (
-            <HeaderUserBadge user={user} />
+            <div className="flex items-center gap-3">
+              <HeaderUserBadge user={user} />
+            </div>
           ) : (
             <Link href="/login" className="transition-colors hover:text-bleu">
               Connexion
@@ -139,7 +148,9 @@ export function MichelinHeaderClient({ user }: MichelinHeaderClientProps) {
             }`}
           >
             {user ? (
-              <HeaderUserBadge user={user} />
+              <div className="flex flex-col items-start gap-4">
+                <HeaderUserBadge user={user} />
+              </div>
             ) : (
               <Link
                 href="/login"

@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
     user: {
       create: vi.fn(),
       findUnique: vi.fn(),
+      update: vi.fn(),
     },
   },
   verifyPassword: vi.fn(),
@@ -27,6 +28,7 @@ import { createAuthToken } from "@/lib/auth";
 import { POST as loginPost } from "@/app/api/auth/login/route";
 import { POST as logoutPost } from "@/app/api/auth/logout/route";
 import { GET as meGet } from "@/app/api/auth/me/route";
+import { PATCH as profilePatch } from "@/app/api/auth/profile/route";
 import { POST as registerPost } from "@/app/api/auth/register/route";
 
 describe("auth API routes", () => {
@@ -166,6 +168,89 @@ describe("auth API routes", () => {
     expect(mocks.prisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 9 },
     });
+  });
+
+  it("updates the current user profile and refreshes the auth cookie", async () => {
+    const user = userFixture({
+      email: "updated@example.com",
+      firstName: "Grace",
+      id: 9,
+      lastName: "Hopper",
+    });
+    const token = createAuthToken({ email: "rider@example.com", userId: 9 });
+
+    mocks.prisma.user.update.mockResolvedValue(user);
+
+    const response = await profilePatch(
+      makeRequest("/api/auth/profile", {
+        body: {
+          email: " UPDATED@example.com ",
+          firstName: " Grace ",
+          lastName: " Hopper ",
+        },
+        headers: { authorization: `Bearer ${token}` },
+        method: "PATCH",
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      user: {
+        email: "updated@example.com",
+        firstName: "Grace",
+        id: 9,
+        lastName: "Hopper",
+      },
+    });
+    expect(response.headers.get("set-cookie")).toContain("auth_token=");
+    expect(mocks.prisma.user.update).toHaveBeenCalledWith({
+      data: {
+        email: "updated@example.com",
+        firstName: "Grace",
+        lastName: "Hopper",
+      },
+      where: { id: 9 },
+    });
+  });
+
+  it("rejects profile updates without auth", async () => {
+    const response = await profilePatch(
+      makeRequest("/api/auth/profile", {
+        body: {
+          email: "updated@example.com",
+          firstName: "Grace",
+          lastName: "Hopper",
+        },
+        method: "PATCH",
+      }),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+    expect(mocks.prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid profile update input", async () => {
+    const token = createAuthToken({ email: "rider@example.com", userId: 9 });
+
+    const response = await profilePatch(
+      makeRequest("/api/auth/profile", {
+        body: {
+          email: "not-an-email",
+          firstName: "Grace",
+          lastName: "Hopper",
+        },
+        headers: { authorization: `Bearer ${token}` },
+        method: "PATCH",
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toEqual({
+      error: "A valid email is required",
+    });
+    expect(mocks.prisma.user.update).not.toHaveBeenCalled();
   });
 
   it("rejects current-user requests without auth", async () => {

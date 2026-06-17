@@ -85,3 +85,42 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d
             docker logout ghcr.io
             docker image prune -f
+
+  # Notification Discord (succès ou échec). No-op si DISCORD_WEBHOOK absent.
+  notify:
+    needs: [build-and-push, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notifier Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          OK: ${{ needs.build-and-push.result == 'success' && needs.deploy.result == 'success' }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          MSG: ${{ github.event.head_commit.message }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK non configuré — notification ignorée."
+            exit 0
+          fi
+          if [ "$OK" = "true" ]; then
+            TITLE="✅ Déploiement réussi"; COLOR=3066993
+          else
+            TITLE="❌ Déploiement échoué"; COLOR=15158332
+          fi
+          payload=$(jq -n \
+            --arg title "$TITLE" --arg url "$RUN_URL" --arg repo "$REPO" \
+            --arg branch "$BRANCH" --arg sha "${SHA:0:7}" --arg author "$ACTOR" \
+            --arg msg "${MSG%%$'\n'*}" --argjson color "$COLOR" \
+            '{embeds:[{title:$title,url:$url,color:$color,fields:[
+              {name:"Dépôt",value:$repo,inline:true},
+              {name:"Branche",value:$branch,inline:true},
+              {name:"Commit",value:$sha,inline:true},
+              {name:"Par",value:$author,inline:true},
+              {name:"Message",value:(if $msg=="" then "—" else $msg end)}
+            ],footer:{text:"GitHub Actions · Deploy"}}]}')
+          curl -sf -X POST -H "Content-Type: application/json" -d "$payload" "$WEBHOOK"

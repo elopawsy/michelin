@@ -1,0 +1,76 @@
+Licence propriétaire — Tous droits réservés
+Proprietary License — All Rights Reserved
+
+Copyright (c) 2026 ESGI Reims — promotion IW 2026.
+Tous droits réservés / All Rights Reserved.
+
+--------------------------------------------------------------------------------
+FRANÇAIS
+--------------------------------------------------------------------------------
+
+Ce logiciel, son code source, ses ressources et sa documentation (le « Projet »)
+sont la propriété exclusive de leur auteur (le « Titulaire »).
+
+Aucune licence ni aucun droit n'est accordé, expressément ou implicitement, sur
+le Projet. En particulier, sauf autorisation écrite préalable et explicite du
+Titulaire, il est interdit de :
+
+  - utiliser, exécuter ou exploiter le Projet, à des fins personnelles ou
+    commerciales ;
+  - copier, reproduire ou télécharger tout ou partie du Projet ;
+  - modifier, adapter, traduire ou créer des œuvres dérivées ;
+  - publier, distribuer, sous-licencier, louer, vendre ou mettre à disposition
+    (y compris en tant que service en ligne / SaaS) tout ou partie du Projet ;
+  - retirer ou altérer les mentions de droits d'auteur ou de propriété.
+
+L'accès au dépôt (par exemple via un lien privé, une revue de code ou un
+entretien) ne confère aucun de ces droits.
+
+ABSENCE DE GARANTIE : le Projet est fourni « en l'état », sans garantie d'aucune
+sorte. Le Titulaire ne saurait être tenu responsable de tout dommage résultant
+de son utilisation.
+
+--------------------------------------------------------------------------------
+ENGLISH
+--------------------------------------------------------------------------------
+
+This software, its source code, assets and documentation (the "Project") are the
+exclusive property of their author (the "Owner").
+
+No license or right is granted, expressly or implicitly, in the Project. Without
+the prior, explicit, written permission of the Owner, you may NOT use, run, copy,
+reproduce, modify, adapt, create derivative works of, publish, distribute,
+sublicense, rent, sell, or make the Project available (including as a hosted /
+SaaS service), in whole or in part, nor remove or alter any copyright or
+proprietary notices. Access to the repository does not grant any of these rights.
+
+THE PROJECT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE OWNER SHALL NOT
+BE LIABLE FOR ANY DAMAGES ARISING FROM ITS USE.
+
+--------------------------------------------------------------------------------
+MARQUES ET CONTENUS TIERS / THIRD-PARTY TRADEMARKS & CONTENT
+--------------------------------------------------------------------------------
+
+Cette licence ne couvre QUE le code original de l'auteur. Elle n'accorde aucun
+droit sur des éléments de tiers utilisés dans le Projet, notamment :
+
+  - la marque « MICHELIN », le logo Michelin et le personnage Bibendum (l'« Homme
+    Michelin ») ;
+  - les pictogrammes et icônes issus de designsystem.michelin.com
+    (dossiers public/pictograms et public/icons) ;
+  - les visuels et photographies de marque (par ex. public/hero-*.png,
+    public/heritage-*.jpg, public/logo*).
+
+Ces éléments demeurent la propriété de Michelin (Compagnie Générale des
+Établissements Michelin) et/ou de leurs titulaires respectifs. Leur présence ici
+relève d'un usage de démonstration / portfolio non commercial et ne vaut ni
+affiliation, ni partenariat, ni approbation par Michelin. Tout usage public ou
+commercial nécessite l'autorisation des titulaires de droits concernés.
+
+This license covers ONLY the author's original code. It grants no rights to any
+third-party materials, including the "MICHELIN" trademark, the Michelin logo and
+the Bibendum character, the pictograms/icons from designsystem.michelin.com, and
+the brand imagery shipped under public/. These remain the property of Michelin
+and/or their respective owners; their use here is for non-commercial
+demonstration/portfolio purposes only and implies no affiliation with or
+endorsement by Michelin.

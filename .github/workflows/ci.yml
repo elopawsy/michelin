@@ -25,3 +25,30 @@ jobs:
       - run: pnpm run test
       - run: pnpm run lint
       - run: pnpm run build
+
+  # Notification Discord uniquement si la CI échoue (évite le spam).
+  notify-failure:
+    needs: [verify]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notifier Discord (échec CI)
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK non configuré — notification ignorée."
+            exit 0
+          fi
+          payload=$(jq -n \
+            --arg url "$RUN_URL" --arg repo "$REPO" --arg branch "$BRANCH" --arg author "$ACTOR" \
+            '{embeds:[{title:"❌ CI échouée",url:$url,color:15158332,fields:[
+              {name:"Dépôt",value:$repo,inline:true},
+              {name:"Branche",value:$branch,inline:true},
+              {name:"Par",value:$author,inline:true}
+            ],footer:{text:"GitHub Actions · CI"}}]}')
+          curl -sf -X POST -H "Content-Type: application/json" -d "$payload" "$WEBHOOK"
