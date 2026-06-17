@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export type HeaderUserBadgeUser = {
   id: number;
   email: string;
@@ -20,9 +22,10 @@ export function HeaderUserBadge({
   variant = "marketing",
 }: HeaderUserBadgeProps) {
   return (
-    <span
-      aria-label={`Utilisateur connecté : ${user.displayName}`}
-      className={`inline-flex min-w-0 items-center gap-2 ${variantClasses[variant]}`}
+    <Link
+      href="/recommandations"
+      aria-label={`Voir les recommandations de ${user.displayName}`}
+      className={`inline-flex min-w-0 items-center gap-2 rounded-pill transition-colors hover:text-bleu focus-visible:outline-bleu ${variantClasses[variant]}`}
       title={user.email}
     >
       <span
@@ -34,6 +37,6 @@ export function HeaderUserBadge({
       <span className="max-w-[11rem] truncate text-sm font-bold">
         {user.displayName}
       </span>
-    </span>
+    </Link>
   );
 }
