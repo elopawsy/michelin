@@ -9,7 +9,7 @@ const globalForPrisma = globalThis as unknown as {
 
 const databaseUrl =
   process.env.DATABASE_URL ??
-  "postgres://michelin:michelin@localhost:5432/michelin";
+  "postgres://michelin:michelin@localhost:55432/michelin";
 
 const adapter = new PrismaPg({ connectionString: databaseUrl });
 
