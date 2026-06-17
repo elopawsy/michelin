@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MichelinHeader } from "../_components/MichelinHeader";
-import { GameClient } from "../_components/jeu/GameClient";
+import { JeuExperience } from "../_components/jeu/JeuExperience";
+import { getCurrentUserSummary } from "@/lib/current-session";
 
 export const metadata: Metadata = {
   title: "Michelin Ride — La Côte · le jeu",
@@ -8,7 +9,12 @@ export const metadata: Metadata = {
     "Pédalez le plus loin possible en gravel, ramassez des pièces et débloquez toute la gamme de pneus Michelin. Un Hill-Climb aux couleurs de Michelin Ride.",
 };
 
-export default function JeuPage() {
+export default async function JeuPage() {
+  const summary = await getCurrentUserSummary();
+  const user = summary
+    ? { id: summary.id, displayName: summary.displayName }
+    : null;
+
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">
       <MichelinHeader />
@@ -26,7 +32,7 @@ export default function JeuPage() {
             Durable au Ride&nbsp;Gravel 700&nbsp;×&nbsp;42 connecté.
           </p>
         </div>
-        <GameClient />
+        <JeuExperience user={user} />
       </main>
     </div>
   );

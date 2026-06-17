@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -15,9 +16,12 @@ import { Hud } from "./Hud";
 import { Menu } from "./Menu";
 import { TouchControls } from "./TouchControls";
 import { tireById } from "./data/tires";
+import { getProgressSnapshot } from "./store";
 import { useGameInput } from "./useGameInput";
 import { usePersistentProgress } from "./usePersistentProgress";
 import type { HudSnapshot, RunResult, Screen } from "./engine/types";
+
+export type JeuUser = { id: number; displayName: string } | null;
 
 function initialHud(connected: boolean): HudSnapshot {
   return {
@@ -44,7 +48,13 @@ function rmServer(): boolean {
   return false;
 }
 
-export function GameClient() {
+export function GameClient({
+  user = null,
+  onScoreSubmitted,
+}: {
+  user?: JeuUser;
+  onScoreSubmitted?: () => void;
+} = {}) {
   const {
     progress,
     isUnlocked,
@@ -61,6 +71,47 @@ export function GameClient() {
   const [result, setResult] = useState<RunResult | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const reducedMotion = useSyncExternalStore(subscribeRM, rmSnapshot, rmServer);
+
+  // ── Classement : soumission du score pour les joueurs connectés ──
+  const userId = user?.id ?? null;
+  const [rank, setRank] = useState<number | null>(null);
+
+  // Envoie un score au classement et renvoie le rang obtenu (ou null).
+  // Aucun setState ici : l'appelant décide quoi faire du rang.
+  const postScore = useCallback(
+    async (
+      score: number,
+      distance: number,
+      tireId: string,
+    ): Promise<number | null> => {
+      if (!userId) return null;
+      try {
+        const res = await fetch("/api/leaderboard", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ score, distance, tireId }),
+        });
+        if (!res.ok) return null;
+        const json = await res.json();
+        onScoreSubmitted?.();
+        return typeof json?.data?.rank === "number" ? json.data.rank : null;
+      } catch {
+        // Réseau indisponible : le score reste en local, resynchronisé plus tard.
+        return null;
+      }
+    },
+    [userId, onScoreSubmitted],
+  );
+
+  // Au moment où l'on devient connecté, on pousse le meilleur score local
+  // (cas invité → inscription → retour sur le jeu).
+  const syncedRef = useRef(false);
+  useEffect(() => {
+    if (!userId || syncedRef.current) return;
+    syncedRef.current = true;
+    const p = getProgressSnapshot();
+    if (p.bestScore > 0) void postScore(p.bestScore, p.bestDistance, p.equipped);
+  }, [userId, postScore]);
 
   const equipped = tireById(progress.equipped);
   const connected = progress.equipped === "ride700";
@@ -102,8 +153,15 @@ export function GameClient() {
         `Sortie terminée. ${banked.distance} mètres, ${banked.coins} pièces, plus ${banked.payout} de gains.` +
           (banked.newBestDistance ? " Nouveau record de distance !" : ""),
       );
+      if (userId) {
+        void postScore(banked.score, banked.distance, progress.equipped).then(
+          (obtainedRank) => {
+            if (obtainedRank != null) setRank(obtainedRank);
+          },
+        );
+      }
     },
-    [bankRun],
+    [bankRun, userId, postScore, progress.equipped],
   );
 
   // touches d'interface : P/Échap = pause, Entrée = démarrer/rejouer
@@ -193,6 +251,8 @@ export function GameClient() {
       {screen === "over" && result && (
         <GameOver
           result={result}
+          isLoggedIn={!!userId}
+          rank={rank}
           onRetry={startRun}
           onGarage={() => setScreen("garage")}
           onMenu={() => setScreen("menu")}
