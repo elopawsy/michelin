@@ -45,7 +45,7 @@ type RecommendationSource = {
 export function toRecommendationCardData(
   recommendation: RecommendationSource,
 ): RecommendationCardData {
-  const price = recommendation.wheel.price.toString();
+  const price = recommendation.wheel.price?.toString() ?? "0";
 
   return {
     id: recommendation.id,
