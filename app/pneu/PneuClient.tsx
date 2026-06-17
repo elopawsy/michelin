@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Badge, Button, ButtonLink, Picto } from "../_components/ui";
 import {
   abonner,
@@ -11,8 +11,15 @@ import {
   trameActuelle,
   type Trame,
 } from "../_lib/ble";
+import {
+  PneuHistoryCharts,
+  type PneuSensorHistoryPoint,
+} from "./_components/PneuHistoryCharts";
 
 type Statut = "inactif" | "connexion" | "connecté" | "erreur";
+
+const SAVE_INTERVAL_MS = 60_000;
+const MAX_HISTORY_POINTS = 120;
 
 // Une mesure = la trame reçue du capteur, horodatée à la réception.
 interface Mesure extends Trame {
@@ -30,8 +37,12 @@ export type PneuRecommendationSummary = {
 };
 
 export function PneuClient({
+  espDeviceId = null,
+  initialHistory = [],
   recommendation = null,
 }: {
+  espDeviceId?: number | null;
+  initialHistory?: PneuSensorHistoryPoint[];
   recommendation?: PneuRecommendationSummary | null;
 }) {
   // État initial dérivé de la connexion ouverte à l'étape capteur de
@@ -48,13 +59,62 @@ export function PneuClient({
     const trame = trameActuelle();
     return deviceConnecte() && trame ? { ...trame, recuLe: horodatage() } : null;
   });
+  const [historique, setHistorique] =
+    useState<PneuSensorHistoryPoint[]>(initialHistory);
+  const [dernierEnregistrement, setDernierEnregistrement] = useState<
+    string | null
+  >(null);
+  const [erreurEnregistrement, setErreurEnregistrement] = useState("");
   const [erreur, setErreur] = useState<string>("");
+  const derniereTrameRef = useRef<Trame | null>(trameActuelle());
+  const sauvegardeEnCoursRef = useRef(false);
+
+  const enregistrerMesure = useCallback(
+    async (trame: Trame | null) => {
+      if (!espDeviceId || !trame || sauvegardeEnCoursRef.current) {
+        return;
+      }
+
+      sauvegardeEnCoursRef.current = true;
+      setErreurEnregistrement("");
+
+      const recordedAt = new Date().toISOString();
+
+      try {
+        const response = await fetch(`/api/esp-devices/${espDeviceId}/readings`, {
+          body: JSON.stringify(toReadingPayload(trame, recordedAt)),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) {
+          throw new Error(await readApiError(response));
+        }
+
+        const body = (await response.json()) as { data?: unknown };
+        const point = normalizeSavedReading(body.data, trame, recordedAt);
+
+        setHistorique((current) => appendHistoryPoint(current, point));
+        setDernierEnregistrement(horodatage(point.recordedAt));
+      } catch (error) {
+        setErreurEnregistrement(
+          error instanceof Error
+            ? error.message
+            : "Impossible d'enregistrer la mesure.",
+        );
+      } finally {
+        sauvegardeEnCoursRef.current = false;
+      }
+    },
+    [espDeviceId],
+  );
 
   // S'abonne aux mesures en direct et à la perte de connexion.
   useEffect(
     () =>
       abonner(
         (trame) => {
+          derniereTrameRef.current = trame;
           setStatut("connecté");
           setMesure({ ...trame, recuLe: horodatage() });
         },
@@ -62,6 +122,18 @@ export function PneuClient({
       ),
     [],
   );
+
+  useEffect(() => {
+    if (statut !== "connecté" || !espDeviceId) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void enregistrerMesure(derniereTrameRef.current);
+    }, SAVE_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [enregistrerMesure, espDeviceId, statut]);
 
   async function connecterPneu() {
     setErreur("");
@@ -199,9 +271,56 @@ export function PneuClient({
           Dernière mesure reçue à {mesure.recuLe}
         </p>
       )}
+      <SaveStatus
+        connected={statut === "connecté"}
+        dernierEnregistrement={dernierEnregistrement}
+        erreur={erreurEnregistrement}
+        espDeviceId={espDeviceId}
+      />
+
+      <PneuHistoryCharts history={historique} />
 
       <RecoPub mesure={mesure} recommendation={recommendation} />
     </main>
+  );
+}
+
+function SaveStatus({
+  connected,
+  dernierEnregistrement,
+  erreur,
+  espDeviceId,
+}: {
+  connected: boolean;
+  dernierEnregistrement: string | null;
+  erreur: string;
+  espDeviceId: number | null;
+}) {
+  if (!connected) {
+    return null;
+  }
+
+  if (!espDeviceId) {
+    return (
+      <p className="mt-4 rounded-card-sm border border-warning bg-warning-fond px-4 py-3 text-sm font-medium text-warning-texte">
+        Aucun capteur ESP n&apos;est associé à ce compte.
+      </p>
+    );
+  }
+
+  if (erreur) {
+    return (
+      <p className="mt-4 rounded-card-sm border border-danger/25 bg-danger-fond px-4 py-3 text-sm font-medium text-danger">
+        {erreur}
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-4 rounded-card-sm border border-succes/20 bg-succes-fond px-4 py-3 text-sm font-medium text-succes">
+      Enregistrement automatique actif
+      {dernierEnregistrement ? ` — dernière sauvegarde à ${dernierEnregistrement}` : ""}
+    </p>
   );
 }
 
@@ -320,6 +439,85 @@ function StatutBadge({ statut }: { statut: Statut }) {
   }
 }
 
-function horodatage() {
-  return new Date().toLocaleTimeString("fr-FR");
+function toReadingPayload(trame: Trame, recordedAt: string) {
+  return {
+    bat: trame.bat,
+    d: trame.d,
+    pf: trame.pf,
+    pr: trame.pr,
+    recordedAt,
+    v: trame.v,
+    wf: trame.wf,
+    wr: trame.wr,
+  };
+}
+
+async function readApiError(response: Response) {
+  try {
+    const body = (await response.json()) as { error?: unknown };
+
+    if (typeof body.error === "string" && body.error.trim()) {
+      return body.error;
+    }
+  } catch {
+    // La réponse d'erreur peut ne pas être du JSON.
+  }
+
+  return "Impossible d'enregistrer la mesure.";
+}
+
+function normalizeSavedReading(
+  value: unknown,
+  fallbackTrame: Trame,
+  fallbackRecordedAt: string,
+): PneuSensorHistoryPoint {
+  const record =
+    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const frontPressureBar =
+    readRecordNumber(record.frontPressureBar) ?? fallbackTrame.pf;
+  const rearPressureBar =
+    readRecordNumber(record.rearPressureBar) ?? fallbackTrame.pr;
+  const frontWearPercent =
+    readRecordNumber(record.frontWearPercent) ?? fallbackTrame.wf;
+  const rearWearPercent =
+    readRecordNumber(record.rearWearPercent) ?? fallbackTrame.wr;
+
+  return {
+    batteryPercent:
+      readRecordNumber(record.batteryPercent) ?? Math.round(fallbackTrame.bat),
+    distanceKm: readRecordNumber(record.distanceKm) ?? fallbackTrame.d,
+    frontPressureBar,
+    frontWearPercent,
+    id: readRecordNumber(record.id) ?? Date.now(),
+    pressureBar:
+      readRecordNumber(record.pressureBar) ??
+      (frontPressureBar + rearPressureBar) / 2,
+    rearPressureBar,
+    rearWearPercent,
+    recordedAt:
+      typeof record.recordedAt === "string"
+        ? record.recordedAt
+        : fallbackRecordedAt,
+    speedKmh: readRecordNumber(record.speedKmh) ?? fallbackTrame.v,
+    wearPercent:
+      readRecordNumber(record.wearPercent) ??
+      Math.max(frontWearPercent, rearWearPercent),
+  };
+}
+
+function appendHistoryPoint(
+  current: PneuSensorHistoryPoint[],
+  point: PneuSensorHistoryPoint,
+) {
+  return [...current.filter((item) => item.id !== point.id), point]
+    .sort((left, right) => Date.parse(left.recordedAt) - Date.parse(right.recordedAt))
+    .slice(-MAX_HISTORY_POINTS);
+}
+
+function readRecordNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function horodatage(value?: string) {
+  return new Date(value ?? Date.now()).toLocaleTimeString("fr-FR");
 }

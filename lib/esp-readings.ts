@@ -24,46 +24,60 @@ export async function createEspReading(
   const roadSurfaceId =
     readNumber(input.roadSurfaceId ?? input.road_surface_id) ??
     (await findRoadSurfaceId(input.roadSurface ?? input.road_surface ?? input.surf));
-  const batteryPercent = readRequiredNumber(
+  const batteryPercent = readRequiredInteger(
     input.batteryPercent ?? input.battery_percent ?? input.bat,
     "batteryPercent",
   );
+  const frontPressureBar = readNumber(
+    input.frontPressureBar ?? input.front_pressure_bar ?? input.pf,
+  );
+  const rearPressureBar = readNumber(
+    input.rearPressureBar ?? input.rear_pressure_bar ?? input.pr,
+  );
+  const frontWearPercent = readNumber(
+    input.frontWearPercent ?? input.front_wear_percent ?? input.wf,
+  );
+  const rearWearPercent = readNumber(
+    input.rearWearPercent ?? input.rear_wear_percent ?? input.wr,
+  );
+  const pressureBar =
+    readNumber(input.pressureBar ?? input.pressure_bar ?? input.p) ??
+    readRequiredDerivedNumber(
+      averageNumbers([frontPressureBar, rearPressureBar]),
+      "pressureBar",
+    );
+  const wearPercent =
+    readNumber(input.wearPercent ?? input.wear_percent ?? input.w) ??
+    readRequiredDerivedNumber(
+      maxNumber([frontWearPercent, rearWearPercent]),
+      "wearPercent",
+    );
+  const recordedAt = readDate(input.recordedAt ?? input.recorded_at) ?? new Date();
   const readingData = {
     espDeviceId: device.id,
     userBicycleId: device.userBicycleId,
-    recordedAt: readDate(input.recordedAt ?? input.recorded_at) ?? new Date(),
-    pressureBar: readRequiredNumber(
-      input.pressureBar ?? input.pressure_bar ?? input.p,
-      "pressureBar",
-    ),
-    wearPercent: readRequiredNumber(
-      input.wearPercent ?? input.wear_percent ?? input.w,
-      "wearPercent",
-    ),
+    recordedAt,
+    pressureBar,
+    ...(frontPressureBar !== null ? { frontPressureBar } : {}),
+    ...(rearPressureBar !== null ? { rearPressureBar } : {}),
+    wearPercent,
+    ...(frontWearPercent !== null ? { frontWearPercent } : {}),
+    ...(rearWearPercent !== null ? { rearWearPercent } : {}),
     speedKmh: readRequiredNumber(
       input.speedKmh ?? input.speed_kmh ?? input.v,
       "speedKmh",
     ),
-    tireTempC: readRequiredNumber(
-      input.tireTempC ?? input.tire_temp_c ?? input.tt,
-      "tireTempC",
-    ),
-    ambientTempC: readRequiredNumber(
-      input.ambientTempC ?? input.ambient_temp_c ?? input.ta,
-      "ambientTempC",
-    ),
+    tireTempC: readNumber(input.tireTempC ?? input.tire_temp_c ?? input.tt) ?? 0,
+    ambientTempC:
+      readNumber(input.ambientTempC ?? input.ambient_temp_c ?? input.ta) ?? 0,
     distanceKm: readRequiredNumber(
       input.distanceKm ?? input.distance_km ?? input.d,
       "distanceKm",
     ),
-    remainingKm: readRequiredNumber(
-      input.remainingKm ?? input.remaining_km ?? input.rem,
-      "remainingKm",
-    ),
-    rollingResistance: readRequiredNumber(
-      input.rollingResistance ?? input.rolling_resistance ?? input.rr,
-      "rollingResistance",
-    ),
+    remainingKm: readNumber(input.remainingKm ?? input.remaining_km ?? input.rem) ?? 0,
+    rollingResistance:
+      readNumber(input.rollingResistance ?? input.rolling_resistance ?? input.rr) ??
+      0,
     roadSurfaceId,
     batteryPercent,
   };
@@ -112,6 +126,18 @@ function readRequiredNumber(value: unknown, fieldName: string) {
   return number;
 }
 
+function readRequiredInteger(value: unknown, fieldName: string) {
+  return clamp(Math.round(readRequiredNumber(value, fieldName)), 0, 100);
+}
+
+function readRequiredDerivedNumber(value: number | null, fieldName: string) {
+  if (value === null) {
+    throw new Error(`${fieldName} is required`);
+  }
+
+  return value;
+}
+
 function readNumber(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -124,6 +150,26 @@ function readNumber(value: unknown) {
   }
 
   return null;
+}
+
+function averageNumbers(values: Array<number | null>) {
+  const numbers = values.filter((value): value is number => value !== null);
+
+  if (numbers.length === 0) {
+    return null;
+  }
+
+  return numbers.reduce((sum, value) => sum + value, 0) / numbers.length;
+}
+
+function maxNumber(values: Array<number | null>) {
+  const numbers = values.filter((value): value is number => value !== null);
+
+  return numbers.length > 0 ? Math.max(...numbers) : null;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function readDate(value: unknown) {
