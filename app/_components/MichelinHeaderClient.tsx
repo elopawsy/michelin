@@ -8,15 +8,13 @@ import {
 } from "./HeaderUserBadge";
 import { Wordmark } from "./ui";
 
-/* `public: true` → lien visible par tous (page accessible sans connexion). */
-const NAV = [
+/* `public: true` → lien visible par tous (page accessible sans connexion).
+   Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
+const NAV: { href: string; label: string; public?: boolean }[] = [
   { href: "/catalogue", label: "Catalogue", public: true },
   { href: "/revendeurs", label: "Revendeurs", public: true },
-/* `public: true` → lien visible par tous (contenu accessible sans connexion).
-   Les autres ne s'affichent que pour un utilisateur connecté (pages protégées). */
-const NAV = [
   { href: "/blog", label: "Le Mag", public: true },
-  { href: "/jeu", label: "Le jeu" },
+  { href: "/jeu", label: "Le jeu", public: true },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
   { href: "/recommandations", label: "Recommandations" },
