@@ -94,6 +94,58 @@ describe("createEspReading", () => {
     });
   });
 
+  it("stores BLE front and rear tire values with compatible aggregate fields", async () => {
+    const reading = { id: 56, pressureBar: 2.45 };
+
+    mocks.prisma.espDevice.findFirst.mockResolvedValue({
+      id: 8,
+      userBicycleId: 21,
+    });
+    mocks.prisma.roadSurface.findMany.mockResolvedValue([]);
+    mocks.prisma.wheelSensorReading.create.mockReturnValue(
+      Promise.resolve(reading),
+    );
+    mocks.prisma.espDevice.update.mockReturnValue(Promise.resolve({ id: 8 }));
+
+    const result = await createEspReading(
+      { email: "rider@example.com", userId: 7 },
+      8,
+      {
+        bat: 86.4,
+        d: 1280,
+        pf: 2.5,
+        pr: 2.4,
+        recordedAt: "2026-02-03T04:05:06.000Z",
+        v: 31.5,
+        wf: 12,
+        wr: 18,
+      },
+    );
+
+    expect(result).toBe(reading);
+    expect(mocks.prisma.wheelSensorReading.create).toHaveBeenCalledWith({
+      data: {
+        ambientTempC: 0,
+        batteryPercent: 86,
+        distanceKm: 1280,
+        espDeviceId: 8,
+        frontPressureBar: 2.5,
+        frontWearPercent: 12,
+        pressureBar: 2.45,
+        rearPressureBar: 2.4,
+        rearWearPercent: 18,
+        recordedAt: new Date("2026-02-03T04:05:06.000Z"),
+        remainingKm: 0,
+        roadSurfaceId: null,
+        rollingResistance: 0,
+        speedKmh: 31.5,
+        tireTempC: 0,
+        userBicycleId: 21,
+        wearPercent: 18,
+      },
+    });
+  });
+
   it("throws when the device does not belong to the session user", async () => {
     mocks.prisma.espDevice.findFirst.mockResolvedValue(null);
 
