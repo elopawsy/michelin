@@ -2,6 +2,7 @@
   "name": "michelin",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
   "packageManager": "pnpm@11.3.0",
   "scripts": {
     "dev": "prisma generate && next dev",

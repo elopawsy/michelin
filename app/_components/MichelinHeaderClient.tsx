@@ -9,6 +9,7 @@ import {
 import { Wordmark } from "./ui";
 
 const NAV = [
+  { href: "/jeu", label: "Le jeu" },
   { href: "/a-propos", label: "À propos" },
   { href: "/faq", label: "FAQ" },
 ];
