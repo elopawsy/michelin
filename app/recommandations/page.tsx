@@ -96,15 +96,15 @@ export default async function RecommandationsPage() {
                       <>
                         <SummaryItem
                           label="Terrain"
-                          value={latestPreference.roadSurface.title}
+                          value={latestPreference.roadSurface?.title ?? ""}
                         />
                         <SummaryItem
                           label="Objectif"
-                          value={latestPreference.goal.title}
+                          value={latestPreference.goal?.title ?? ""}
                         />
                         <SummaryItem
                           label="Distance"
-                          value={`${latestPreference.weeklyDistanceKm.toFixed(0)} km / semaine`}
+                          value={latestPreference.weeklyDistanceKm ? `${latestPreference.weeklyDistanceKm.toFixed(0)} km / semaine` : ""}
                         />
                       </>
                     )}
