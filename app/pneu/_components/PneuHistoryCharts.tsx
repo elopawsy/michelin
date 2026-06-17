@@ -186,12 +186,12 @@ function MetricChart({
         viewBox="0 0 640 220"
       >
         <line x1="44" x2="616" y1="28" y2="28" stroke="#e5eaf2" />
-        <line x1="44" x2="616" y1="91" y2="91" stroke="#eef4ff" />
-        <line x1="44" x2="616" y1="154" y2="154" stroke="#e5eaf2" />
+        <line x1="44" x2="616" y1="105" y2="105" stroke="#eef4ff" />
+        <line x1="44" x2="616" y1="182" y2="182" stroke="#e5eaf2" />
         <text x="0" y="34" fill="#6b7280" fontSize="18" fontWeight="700">
           {formatAxisValue(chart.max, config.unit)}
         </text>
-        <text x="0" y="160" fill="#6b7280" fontSize="18" fontWeight="700">
+        <text x="0" y="188" fill="#6b7280" fontSize="18" fontWeight="700">
           {formatAxisValue(chart.min, config.unit)}
         </text>
         {chart.series.map((series) => (
