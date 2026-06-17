@@ -7,6 +7,7 @@ const PUBLIC_PATHS = new Set([
   "/",
   "/login",
   "/register",
+  "/offline",
   "/revendeurs",
   "/catalogue",
   "/jeu"

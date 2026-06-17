@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Sans } from "next/font/google";
+import { PwaRegistration } from "@/app/_components/PwaRegistration";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -18,12 +19,30 @@ const SITE_DESCRIPTION =
   "pression, usure et surface en temps réel.";
 
 export const metadata: Metadata = {
+  applicationName: SITE_NAME,
   metadataBase: new URL(SITE_URL),
+  manifest: "/manifest.webmanifest",
   title: {
     default: "Michelin Ride — Le gravel, par-delà le bitume",
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Michelin Ride",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    apple: [{ url: "/pwa/apple-touch-icon.png", sizes: "180x180" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/pwa/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -37,6 +56,10 @@ export const metadata: Metadata = {
     title: "Michelin Ride — Le gravel, par-delà le bitume",
     description: SITE_DESCRIPTION,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#00205b",
 };
 
 export default function RootLayout({
@@ -55,6 +78,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <PwaRegistration />
       </body>
     </html>
   );
