@@ -1,20 +1,13 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { HeaderUserBadge } from "@/app/_components/HeaderUserBadge";
-import { Badge, ButtonLink, Picto, Wordmark } from "@/app/_components/ui";
-import {
-  getCurrentAuthSession,
-  getCurrentUserSummary,
-} from "@/lib/current-session";
+import { MichelinHeader } from "@/app/_components/MichelinHeader";
+import { Badge, ButtonLink, Picto } from "@/app/_components/ui";
+import { getCurrentAuthSession } from "@/lib/current-session";
 import { loadDashboard } from "@/lib/dashboard";
 import { RecommendationsGrid } from "./_components/RecommendationsGrid";
 import { toRecommendationCardData } from "./_lib/recommendation-view";
 
 export default async function RecommandationsPage() {
-  const [session, user] = await Promise.all([
-    getCurrentAuthSession(),
-    getCurrentUserSummary(),
-  ]);
+  const session = await getCurrentAuthSession();
 
   if (!session) {
     redirect("/login?next=/recommandations");
@@ -27,38 +20,7 @@ export default async function RecommandationsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-fond text-encre">
-      <header className="sticky top-0 z-40 border-b border-bordure bg-carte/85 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 py-4 lg:px-10">
-          <Link href="/" aria-label="Michelin Ride — accueil">
-            <Wordmark />
-          </Link>
-          <nav className="flex items-center gap-5 sm:gap-7" aria-label="Navigation">
-            <Link
-              href="/configurateur"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              Configurateur
-            </Link>
-            <Link
-              href="/pneu"
-              className="hidden text-sm font-medium text-encre-2 transition-colors hover:text-encre sm:block"
-            >
-              Capteur
-            </Link>
-            <Link
-              href="/recommandations"
-              className="text-sm font-medium text-encre-2 transition-colors hover:text-encre"
-            >
-              Recommandations
-            </Link>
-            {user && (
-              <div className="flex items-center gap-3">
-                <HeaderUserBadge user={user} variant="app" />
-              </div>
-            )}
-          </nav>
-        </div>
-      </header>
+      <MichelinHeader />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-7 px-6 py-10 lg:px-10 lg:py-12">
         <section>
