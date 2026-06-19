@@ -12,12 +12,11 @@ import {
   WHEEL_R,
 } from "./constants";
 import type { GameEngine } from "./world";
-import type { Palette, Sprites, Viewport } from "./types";
+import type { Palette, Viewport } from "./types";
 
 const COIN_R = 12;
 const RAVITO_W = 24;
 const RAVITO_H = 28;
-const RIDER_H = 64;
 
 interface RenderOpts {
   reducedMotion: boolean;
@@ -29,7 +28,6 @@ export function render(
   ctx: CanvasRenderingContext2D,
   engine: GameEngine,
   theme: Palette,
-  sprites: Sprites,
   view: Viewport,
   opts: RenderOpts,
 ): void {
@@ -140,8 +138,8 @@ export function render(
   }
   ctx.globalAlpha = 1;
 
-  // --- vélo + Bibendum (pose interpolée) ---
-  drawBike(ctx, theme, sprites, engine.connected, bx, by, bth);
+  // --- vélo (pose interpolée) ---
+  drawBike(ctx, theme, engine.connected, bx, by, bth);
 
   ctx.restore();
 
@@ -197,7 +195,6 @@ function drawHills(
 function drawBike(
   ctx: CanvasRenderingContext2D,
   theme: Palette,
-  sprites: Sprites,
   connected: boolean,
   bx: number,
   by: number,
@@ -246,19 +243,13 @@ function drawBike(
   ctx.lineTo(2, 0);
   ctx.stroke();
 
-  const rider = sprites.rider;
-  if (rider && rider.complete && rider.naturalWidth > 0) {
-    const h = RIDER_H;
-    const w = h * (rider.naturalWidth / rider.naturalHeight);
-    ctx.drawImage(rider, -w / 2, -h - 4, w, h);
-  } else {
-    ctx.fillStyle = theme.bikeHub;
-    ctx.beginPath();
-    ctx.arc(-2, -28, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = theme.hillsMid;
-    ctx.fillRect(-8, -22, 14, 18);
-  }
+  // Pilote stylisé en vecteur (tête + buste), assorti au trait du vélo.
+  ctx.fillStyle = theme.bikeHub;
+  ctx.beginPath();
+  ctx.arc(-2, -28, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = theme.hillsMid;
+  ctx.fillRect(-8, -22, 14, 18);
   ctx.restore();
 }
 

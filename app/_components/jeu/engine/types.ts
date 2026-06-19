@@ -138,8 +138,3 @@ export interface Palette {
   crashFlash: string;
   connectedGlow: string;
 }
-
-export interface Sprites {
-  rider: HTMLImageElement | null;
-  backdrop: HTMLImageElement | null;
-}

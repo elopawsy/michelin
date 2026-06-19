@@ -15,7 +15,6 @@ import type {
   HudSnapshot,
   InputState,
   RunResult,
-  Sprites,
   TireStats,
   Viewport,
 } from "./engine/types";
@@ -42,7 +41,6 @@ export function GameCanvas({
   onRunEnd,
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const spritesRef = useRef<Sprites>({ rider: null, backdrop: null });
   const runningRef = useRef(running);
   const reducedRef = useRef(reducedMotion);
   const onHudRef = useRef(onHud);
@@ -62,13 +60,6 @@ export function GameCanvas({
   useEffect(() => {
     onRunEndRef.current = onRunEnd;
   }, [onRunEnd]);
-
-  // Préchargement du sprite du pilote (une fois). Pas de photo de fond : sobre.
-  useEffect(() => {
-    const rider = new Image();
-    rider.src = "/hero-bibendum.png";
-    spritesRef.current = { rider, backdrop: null };
-  }, []);
 
   // Boucle rAF + moteur. Recréée seulement quand le run (seed) ou le pneu change.
   useEffect(() => {
@@ -120,7 +111,7 @@ export function GameCanvas({
       }
 
       const alpha = runningRef.current && !engine.runOver ? acc / DT : 1;
-      render(ctx, engine, PALETTE, spritesRef.current, view, {
+      render(ctx, engine, PALETTE, view, {
         reducedMotion: reducedRef.current,
         time: t / 1000,
         alpha,
