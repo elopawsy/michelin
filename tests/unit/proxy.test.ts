@@ -35,6 +35,13 @@ describe("proxy auth gate", () => {
     expect(response.headers.get("location")).toBeNull();
   });
 
+  it("allows the PWA offline page without a session", () => {
+    const response = proxy(makeRequest("/offline"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
   it("redirects private pages to login without a session", () => {
     const response = proxy(makeRequest("/pneu?tab=capteur"));
 
